@@ -18,6 +18,7 @@ class Solver(BaseSolver):
         self.S = S
         self.alpha = alpha
 
+        # sklearn doesnt' accept tolerance 0
         self.tol = 1e-18
         self.model = GraphicalLasso(alpha=self.alpha,
                                     covariance="precomputed",
