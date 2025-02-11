@@ -10,11 +10,9 @@ class Objective(BaseObjective):
 
     url = "https://github.com/Perceptronium/benchmark_graphical_lasso"
 
-    # alphas = self.alpha_max*np.geomspace(1, 1e-3, num=30)
-
     # alpha is the regularization hyperparameter
     parameters = {
-        'alpha': [0.1, 0.2, 0.3],
+        'alpha': [0.2],
     }
 
     requirements = ["numpy"]
@@ -26,6 +24,8 @@ class Objective(BaseObjective):
         self.S = S
         self.Theta_true = Theta_true
         self.alpha_max = alpha_max
+
+        # self.alpha = self.alpha_max*np.geomspace(1, 1e-3, num=5)
 
     def evaluate_result(self, Theta):
 

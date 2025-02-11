@@ -17,7 +17,7 @@ class Dataset(BaseDataset):
             # (100, 20),
             (100, 50),
         ],
-        'alpha': [0.9],
+        'sparsity_controller': [0.9],
         'random_state': [0],
     }
 
@@ -27,7 +27,7 @@ class Dataset(BaseDataset):
         rng = check_random_state(self.random_state)
         Theta_true = make_sparse_spd_matrix(
             self.n_features,
-            alpha=self.alpha,
+            alpha=self.sparsity_controller,
             random_state=rng)
 
         Theta_true += 0.1*np.eye(self.n_features)

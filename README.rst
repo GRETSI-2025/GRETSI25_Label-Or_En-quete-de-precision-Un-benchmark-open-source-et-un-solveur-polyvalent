@@ -1,3 +1,16 @@
+Template for Benchopt Benchmark repositories
+=============================================
+|Build Template|
+
+This repo should be used with the following steps:
+
+1. Hit the `Use this template` button on the top of `this page <https://github.com/benchopt/template_benchmark>`_,
+2. Use the form to create a new github repository with your benchmark name,
+3. Clone the newly created repository on your computer,
+4. Run ``python clean_template.py`` script that will remove instruction relative to
+   the template in ``README.rst`` and update it with your repo and org name.
+5. Edit the problem description in the ``README.rst``.
+6. Update ``objective.py`` and the files in ``datasets`` and ``solvers`` to create the benchmark.
 
 My Benchopt Benchmark
 =====================
@@ -5,10 +18,10 @@ My Benchopt Benchmark
 
 Benchopt is a package to simplify and make more transparent and
 reproducible comparisons of optimization methods.
-This benchmark is dedicated to solvers of **describe your problem**:
+This benchmark is dedicated to solvers of the Graphical Lasso estimator (Banerjee et al., 2008):
 
 
-$$\\min_{\\beta} f(X, \\beta),$$
+$$\\min_{\\Theta \\succ 0} - \\log \\det (\\Theta) + \\langle \\Theta, S \\rangle + \\alpha \\Vert \\Theta \\Vert_{1,\\mathrm{off}},$$
 
 where $X$ is the matrix of data and $\\beta$ is the optimization variable.
 
@@ -20,19 +33,21 @@ This benchmark can be run using the following commands:
 .. code-block::
 
    $ pip install -U benchopt
-   $ git clone https://github.com/Perceptronium/benchmark_graphical_lasso
-   $ benchopt run benchmark_graphical_lasso
+   $ git clone https://github.com/#ORG/#BENCHMARK_NAME
+   $ benchopt run #BENCHMARK_NAME
 
 Apart from the problem, options can be passed to ``benchopt run``, to restrict the benchmarks to some solvers or datasets, e.g.:
 
 .. code-block::
 
-	$ benchopt run benchmark_graphical_lasso -s solver1 -d dataset2 --max-runs 10 --n-repetitions 10
+	$ benchopt run #BENCHMARK_NAME -s solver1 -d dataset2 --max-runs 10 --n-repetitions 10
 
 
 Use ``benchopt run -h`` for more details about these options, or visit https://benchopt.github.io/api.html.
 
-.. |Build Status| image:: https://github.com/Perceptronium/benchmark_graphical_lasso/actoiworkflows/main.yml/badge.svg
-   :target: https://github.com/Perceptronium/benchmark_graphical_lasso/actions
+.. |Build Template| image:: https://github.com/benchopt/template_benchmark/actions/workflows/main.yml/badge.svg
+   :target: https://github.com/benchopt/template_benchmark/actions
+.. |Build Status| image:: https://github.com/#ORG/#BENCHMARK_NAME/actoiworkflows/main.yml/badge.svg
+   :target: https://github.com/#ORG/#BENCHMARK_NAME/actions
 .. |Python 3.6+| image:: https://img.shields.io/badge/python-3.6%2B-blue
    :target: https://www.python.org/downloads/release/python-360/

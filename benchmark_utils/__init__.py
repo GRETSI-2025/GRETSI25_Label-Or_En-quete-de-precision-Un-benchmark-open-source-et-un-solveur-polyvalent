@@ -15,14 +15,6 @@ with safe_import_context() as import_ctx:
     from skglm.utils.jit_compilation import compiled_clone
 
 
-def gradient_ols(X, y, beta):
-    return X.T @ (X @ beta - y)
-
-
-def value_ols(X, y, beta):
-    return 0.5 * np.mean((y - X @ beta) ** 2)
-
-
 class GraphicalLasso():
     def __init__(self,
                  alpha=1.,
