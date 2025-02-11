@@ -23,7 +23,7 @@ This benchmark is dedicated to solvers of the Graphical Lasso estimator (Banerje
 
 $$\\min_{\\Theta \\succ 0} - \\log \\det (\\Theta) + \\langle \\Theta, S \\rangle + \\alpha \\Vert \\Theta \\Vert_{1,\\mathrm{off}},$$
 
-where $X$ is the matrix of data and $\\beta$ is the optimization variable.
+where $\\Theta$ is the optimization variable and $S$ is the empirical covariance matrix.
 
 Install
 --------
