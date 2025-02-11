@@ -44,9 +44,9 @@ class Dataset(BaseDataset):
         S = np.cov(X, bias=True, rowvar=False)
         S_cpy = np.copy(S)
         np.fill_diagonal(S_cpy, 0.)
-        lmbd_max = np.max(np.abs(S_cpy))
+        alpha_max = np.max(np.abs(S_cpy))
 
         # The dictionary defines the keyword arguments for `Objective.set_data`
         return dict(S=S,
                     Theta_true=Theta_true,
-                    lmbd_max=lmbd_max)
+                    alpha_max=alpha_max)
