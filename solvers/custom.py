@@ -11,7 +11,7 @@ class Solver(BaseSolver):
     name = 'Custom'
 
     parameters = {
-        # 'scale_step': [1, 1.99],  # ?
+        'algo': ["banerjee", "mazumder"],  # ?
     }
 
     requirements = ["numpy"]
