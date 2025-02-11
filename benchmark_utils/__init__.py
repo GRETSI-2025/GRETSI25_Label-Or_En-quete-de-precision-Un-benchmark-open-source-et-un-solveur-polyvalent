@@ -125,9 +125,11 @@ class GraphicalLasso():
                 print(f"Weighted Glasso converged at CD epoch {it + 1}")
                 break
         else:
-            print(f"Not converged at epoch {it + 1}, "
-                  f"diff={norm(Theta - Theta_old):.2e}")
+            print(
+                # f"Not converged at epoch {it + 1}, "
+                # f"diff={norm(Theta - Theta_old):.2e}"
+            )
         self.precision_, self.covariance_ = Theta, W
-        self.n_iter_ = it + 1
+        # self.n_iter_ = it + 1
 
         return self

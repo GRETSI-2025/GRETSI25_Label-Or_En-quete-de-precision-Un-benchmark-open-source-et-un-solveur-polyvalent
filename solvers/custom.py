@@ -11,24 +11,24 @@ class Solver(BaseSolver):
     name = 'Custom'
 
     parameters = {
-        'algo': ["banerjee", "mazumder"],  # ?
+        'algo': ["mazumder"],
     }
 
     requirements = ["numpy"]
 
     def set_objective(self, S, alpha):
-        # self.Theta = Theta
         self.S = S
         self.alpha = alpha
 
+        self.tol = 1e-4
         self.model = GraphicalLasso(alpha=self.alpha,
-                                    algo="mazumder",
+                                    algo=self.algo,
                                     warm_start=True,
-                                    tol=1e-4)
+                                    tol=self.tol)
 
     def run(self, n_iter):
 
-        self.model.max_iter = 1000
+        self.model.max_iter = n_iter
         self.model.fit(self.S)
 
         self.Theta = self.model.precision_
