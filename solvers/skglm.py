@@ -11,7 +11,7 @@ class Solver(BaseSolver):
     name = 'skglm'
 
     parameters = {
-        'algo': ["mazumder"],
+        'algo': ["mazumder", "banerjee"],
     }
 
     requirements = ["numpy"]
@@ -21,10 +21,16 @@ class Solver(BaseSolver):
         self.alpha = alpha
 
         self.tol = 0.
-        self.model = GraphicalLasso(alpha=self.alpha,
-                                    algo=self.algo,
-                                    warm_start=True,
-                                    tol=self.tol)
+        if self.algo == "banerjee":
+            self.model = GraphicalLasso(alpha=self.alpha,
+                                        algo=self.algo,
+                                        warm_start=False,
+                                        tol=self.tol)
+        else:
+            self.model = GraphicalLasso(alpha=self.alpha,
+                                        algo=self.algo,
+                                        warm_start=True,
+                                        tol=self.tol)
 
         # Cache Numba compilation
         self.run(2)
