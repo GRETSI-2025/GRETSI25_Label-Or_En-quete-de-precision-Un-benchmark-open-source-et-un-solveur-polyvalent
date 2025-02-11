@@ -10,11 +10,11 @@ class Objective(BaseObjective):
 
     url = "https://github.com/Perceptronium/benchmark_graphical_lasso"
 
-    alphas = self.alpha_max*np.geomspace(1, 1e-3, num=30)
+    # alphas = self.alpha_max*np.geomspace(1, 1e-3, num=30)
 
     # alpha is the regularization hyperparameter
     parameters = {
-        'alpha': alphas,
+        'alpha': [0.1, 0.2, 0.3],
     }
 
     requirements = ["numpy"]
@@ -29,7 +29,7 @@ class Objective(BaseObjective):
 
     def evaluate_result(self, Theta):
 
-        neg_llh = (-np.slogdet(Theta)[1] +
+        neg_llh = (-np.linalg.slogdet(Theta)[1] +
                    np.trace(Theta @ self.S))  # The trace can be computed smarter ?
 
         pen = self.alpha*np.sum(np.abs(Theta))
@@ -41,11 +41,11 @@ class Objective(BaseObjective):
         )
 
     def get_one_result(self):
-        return dict(Theta=np.zeros_like(self.S))
+        return dict(Theta=np.eye(self.S.shape[0]))
 
     def get_objective(self):
         return dict(
-            Theta=self.Theta,
+            # Theta=self.Theta,
             S=self.S,
             alpha=self.alpha
         )

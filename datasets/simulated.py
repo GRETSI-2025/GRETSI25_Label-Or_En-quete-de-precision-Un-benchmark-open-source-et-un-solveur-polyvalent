@@ -13,9 +13,9 @@ class Dataset(BaseDataset):
 
     parameters = {
         'n_samples, n_features': [
-            (100, 10),
+            # (100, 10),
             # (100, 20),
-            # (100, 50),
+            (100, 50),
         ],
         'alpha': [0.9],
         'random_state': [0],

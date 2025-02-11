@@ -16,8 +16,8 @@ class Solver(BaseSolver):
 
     requirements = ["numpy"]
 
-    def set_objective(self, Theta, S, alpha):
-        self.Theta = Theta
+    def set_objective(self, S, alpha):
+        # self.Theta = Theta
         self.S = S
         self.alpha = alpha
 
@@ -28,7 +28,7 @@ class Solver(BaseSolver):
 
     def run(self, n_iter):
 
-        self.model.max_iter = n_iter
+        self.model.max_iter = 1000
         self.model.fit(self.S)
 
         self.Theta = self.model.precision_
