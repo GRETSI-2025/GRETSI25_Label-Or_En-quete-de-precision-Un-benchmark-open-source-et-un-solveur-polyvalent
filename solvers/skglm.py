@@ -22,6 +22,7 @@ class Solver(BaseSolver):
 
         self.tol = 0.
         if self.algo == "banerjee":
+            # Banerjee does not support warm start for now
             self.model = GraphicalLasso(alpha=self.alpha,
                                         algo=self.algo,
                                         warm_start=False,
