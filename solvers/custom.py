@@ -20,7 +20,7 @@ class Solver(BaseSolver):
         self.S = S
         self.alpha = alpha
 
-        self.tol = 1e-4
+        self.tol = 0.
         self.model = GraphicalLasso(alpha=self.alpha,
                                     algo=self.algo,
                                     warm_start=True,

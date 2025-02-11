@@ -13,7 +13,7 @@ class Objective(BaseObjective):
 
     # alpha is the regularization hyperparameter
     parameters = {
-        'reg': np.geomspace(1, 1e-3, num=10).tolist(),
+        'reg': np.geomspace(1, 1e-2, num=10).tolist(),
     }
 
     requirements = ["numpy"]
