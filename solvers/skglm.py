@@ -8,7 +8,7 @@ with safe_import_context() as import_ctx:
 
 class Solver(BaseSolver):
 
-    name = 'Custom'
+    name = 'skglm'
 
     parameters = {
         'algo': ["mazumder"],
@@ -25,6 +25,9 @@ class Solver(BaseSolver):
                                     algo=self.algo,
                                     warm_start=True,
                                     tol=self.tol)
+
+        # Cache Numba compilation
+        self.run(2)
 
     def run(self, n_iter):
 

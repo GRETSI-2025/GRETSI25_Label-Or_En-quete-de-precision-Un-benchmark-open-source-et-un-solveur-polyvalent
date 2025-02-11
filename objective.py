@@ -7,33 +7,33 @@ with safe_import_context() as import_ctx:
 
 class Objective(BaseObjective):
 
-    name = "GLasso objective"
+    name = "GLasso"
 
     url = "https://github.com/Perceptronium/benchmark_graphical_lasso"
 
     # alpha is the regularization hyperparameter
     parameters = {
-        'reg': np.geomspace(1, 1e-2, num=10).tolist(),
+        'reg': [0.1],
     }
 
-    requirements = ["numpy"]
+    requirements = ["numpy", "scikit-learn"]
 
     min_benchopt_version = "1.5"
 
-    def set_data(self, S, Theta_true, alpha_max):
+    def set_data(self, S, Theta_true):
 
         self.S = S
         self.Theta_true = Theta_true
-        self.alpha_max = alpha_max
-
-        self.alpha = self.alpha_max*self.reg
+        self.alpha = self.reg * self._get_alpha_max(S)
 
     def evaluate_result(self, Theta):
 
         neg_llh = (-np.linalg.slogdet(Theta)[1] +
-                   np.trace(Theta @ self.S))
+                   (Theta * self.S).sum())
 
-        pen = self.alpha*np.sum(np.abs(Theta))
+        pen = self.alpha * np.sum(np.abs(Theta))
+        # diagonal is not penalized:
+        pen -= self.alpha * np.trace(np.abs(Theta))
 
         return dict(
             value=neg_llh + pen,
@@ -52,5 +52,10 @@ class Objective(BaseObjective):
     def get_objective(self):
         return dict(
             S=self.S,
-            alpha=self.alpha
+            alpha=self.alpha,
         )
+
+    def _get_alpha_max(self, S):
+        S_cpy = np.copy(S)
+        np.fill_diagonal(S_cpy, 0.)
+        return np.max(np.abs(S_cpy))

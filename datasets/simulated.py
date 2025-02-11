@@ -37,10 +37,7 @@ class Dataset(BaseDataset):
             size=self.n_samples,
         )
         S = np.cov(X, bias=True, rowvar=False)
-        S_cpy = np.copy(S)
-        np.fill_diagonal(S_cpy, 0.)
-        alpha_max = np.max(np.abs(S_cpy))
 
         return dict(S=S,
                     Theta_true=Theta_true,
-                    alpha_max=alpha_max)
+                    )

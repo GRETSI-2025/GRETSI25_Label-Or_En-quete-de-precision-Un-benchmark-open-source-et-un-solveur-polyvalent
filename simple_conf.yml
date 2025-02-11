@@ -1,0 +1,5 @@
+objective:
+  - "GLasso[reg=0.1]"
+solver:
+  - skglm 
+n-repetitions: 1
