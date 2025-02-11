@@ -9,12 +9,11 @@ with safe_import_context() as import_ctx:
 
 class Dataset(BaseDataset):
 
-    name = "Simulated i.i.d. Gaussian"
+    name = "simulated"
 
     parameters = {
         'n_samples, n_features': [
             (200, 50),
-            # (200, 100),
         ],
         'sparsity_controller': [0.9],
         'random_state': [0],

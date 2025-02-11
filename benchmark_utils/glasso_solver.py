@@ -43,7 +43,11 @@ class GraphicalLasso():
             Theta = self.precision_
             W = self.covariance_
         else:
-            W = S.copy()  # + alpha*np.eye(p)
+            W = S.copy()
+            # sklearn like regularization of init: scale down off
+            # diagonal coefficients of cov by 5%
+            W *= 0.95
+            W.flat[::p + 1] = S.flat[::p + 1]
             Theta = np.linalg.pinv(W, hermitian=True)
 
         datafit = compiled_clone(QuadraticHessian())

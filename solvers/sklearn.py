@@ -1,14 +1,14 @@
+import warnings
 from benchopt import BaseSolver, safe_import_context
 
 with safe_import_context() as import_ctx:
     import numpy as np
-
     from sklearn.covariance import GraphicalLasso
+    from sklearn.exceptions import ConvergenceWarning
 
 
 class Solver(BaseSolver):
-
-    name = 'Scikit-Learn'
+    name = 'sklearn'
 
     parameters = {}
 
@@ -23,6 +23,7 @@ class Solver(BaseSolver):
         self.model = GraphicalLasso(alpha=self.alpha,
                                     covariance="precomputed",
                                     tol=self.tol)
+        warnings.filterwarnings('ignore', category=ConvergenceWarning)
 
     def run(self, n_iter):
 

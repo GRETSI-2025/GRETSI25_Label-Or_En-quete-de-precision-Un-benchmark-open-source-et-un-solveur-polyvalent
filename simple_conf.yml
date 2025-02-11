@@ -1,5 +1,10 @@
 objective:
   - "GLasso[reg=0.1]"
 solver:
-  - skglm 
+  - skglm[algo=mazumder] 
+  - skglm[algo=banerjee]
+  - sklearn 
+dataset:
+  - simulated[n_samples=500,n_features=300]
 n-repetitions: 1
+n-jobs: 4

@@ -21,17 +21,10 @@ class Solver(BaseSolver):
         self.alpha = alpha
 
         self.tol = 0.
-        if self.algo == "banerjee":
-            # Banerjee does not support warm start for now
-            self.model = GraphicalLasso(alpha=self.alpha,
-                                        algo=self.algo,
-                                        warm_start=False,
-                                        tol=self.tol)
-        else:
-            self.model = GraphicalLasso(alpha=self.alpha,
-                                        algo=self.algo,
-                                        warm_start=True,
-                                        tol=self.tol)
+        self.model = GraphicalLasso(alpha=self.alpha,
+                                    algo=self.algo,
+                                    warm_start=False,
+                                    tol=self.tol)
 
         # Cache Numba compilation
         self.run(2)
