@@ -14,8 +14,8 @@ class Dataset(BaseDataset):
     parameters = {
         'n_samples, n_features': [
             (100, 10),
-            (100, 20),
-            (100, 50),
+            # (100, 20),
+            # (100, 50),
         ],
         'alpha': [0.9],
         'random_state': [0],
@@ -24,10 +24,6 @@ class Dataset(BaseDataset):
     requirements = ["sklearn"]
 
     def get_data(self):
-        # The return arguments of this function are passed as keyword arguments
-        # to `Objective.set_data`. This defines the benchmark's
-        # API to pass data. It is customizable for each benchmark.
-
         rng = check_random_state(self.random_state)
         Theta_true = make_sparse_spd_matrix(
             self.n_features,
@@ -46,7 +42,6 @@ class Dataset(BaseDataset):
         np.fill_diagonal(S_cpy, 0.)
         alpha_max = np.max(np.abs(S_cpy))
 
-        # The dictionary defines the keyword arguments for `Objective.set_data`
         return dict(S=S,
                     Theta_true=Theta_true,
                     alpha_max=alpha_max)

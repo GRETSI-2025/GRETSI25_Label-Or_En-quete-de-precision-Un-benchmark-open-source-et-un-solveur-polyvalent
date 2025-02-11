@@ -10,7 +10,7 @@ class Objective(BaseObjective):
 
     url = "https://github.com/Perceptronium/benchmark_graphical_lasso"
 
-    alphas = self.alpha_max*np.geomspace(1, 1e-2, num=30)
+    alphas = self.alpha_max*np.geomspace(1, 1e-3, num=30)
 
     # alpha is the regularization hyperparameter
     parameters = {
