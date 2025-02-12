@@ -22,8 +22,11 @@ class Solver(BaseSolver):
         self.tol = 1e-18
         self.model = GraphicalLasso(alpha=self.alpha,
                                     covariance="precomputed",
-                                    tol=self.tol)
+                                    tol=self.tol,
+                                    )
         warnings.filterwarnings('ignore', category=ConvergenceWarning)
+
+        # self.run(5)
 
     def run(self, n_iter):
 

@@ -13,9 +13,12 @@ class Dataset(BaseDataset):
 
     parameters = {
         'n_samples, n_features': [
-            (200, 50),
+            (300, 50),
+            (300, 100),
+            (300, 300),
+            (3000, 1000),
         ],
-        'sparsity_controller': [0.9],
+        'sparsity_controller': [0.5, 0.9],
         'random_state': [0],
     }
 
