@@ -3,6 +3,10 @@ from benchopt.utils import safe_import_context
 with safe_import_context() as import_ctx:
     import numpy as np
     from numpy.linalg import norm
+
+    from sklearn.utils.validation import check_random_state
+    from sklearn.linear_model import _cd_fast as cd_fast
+
     from skglm.solvers import AndersonCD
     from skglm.datafits import QuadraticHessian
     from skglm.penalties import WeightedL1
@@ -43,7 +47,10 @@ class GraphicalLasso():
             Theta = self.precision_
             W = self.covariance_
         else:
-            W = S.copy()  # + alpha*np.eye(p)
+            # W = S.copy()  # + alpha*np.eye(p)
+            W = S.copy()
+            W *= 0.95
+            W.flat[:: p + 1] = S.flat[:: p + 1]
             Theta = np.linalg.pinv(W, hermitian=True)
 
         datafit = compiled_clone(QuadraticHessian())
@@ -72,48 +79,71 @@ class GraphicalLasso():
 
                 penalty.weights = Weights[_12]
 
-                if self.algo == "banerjee":
-                    w_init = Theta[_12]/Theta[_22]
-                    Xw_init = W_11 @ w_init
-                    Q = W_11
-                elif self.algo == "mazumder":
-                    inv_Theta_11 = W_11 - np.outer(w_12, w_12)/w_22
-                    Q = inv_Theta_11
-                    w_init = Theta[_12] * w_22
-                    Xw_init = inv_Theta_11 @ w_init
-                else:
-                    raise ValueError(f"Unsupported algo {self.algo}")
+                # if self.algo == "banerjee":
+                #     w_init = Theta[_12]/Theta[_22]
+                #     Xw_init = W_11 @ w_init
+                #     Q = W_11
+                # elif self.algo == "mazumder":
+                #     inv_Theta_11 = W_11 - np.outer(w_12, w_12)/w_22
+                #     Q = inv_Theta_11
+                #     w_init = Theta[_12] * w_22
+                #     Xw_init = inv_Theta_11 @ w_init
+                # else:
+                #     raise ValueError(f"Unsupported algo {self.algo}")
 
-                beta, _, _ = solver._solve(
-                    Q,
+                # beta, _, _ = solver._solve(
+                #     Q,
+                #     s_12,
+                #     datafit,
+                #     penalty,
+                #     w_init=w_init,
+                #     Xw_init=Xw_init,
+                # )
+
+                enet_tol = 1e-4
+                eps = np.finfo(np.float64).eps
+                beta = -(Theta[_12] / (Theta[_22] + 1000*eps))
+                beta, _, _, _ = cd_fast.enet_coordinate_descent_gram(
+                    beta,
+                    self.alpha,
+                    0,
+                    W_11,
                     s_12,
-                    datafit,
-                    penalty,
-                    w_init=w_init,
-                    Xw_init=Xw_init,
+                    s_12,
+                    self.max_iter,
+                    enet_tol,
+                    check_random_state(None),
+                    False,
                 )
 
                 if self.algo == "banerjee":
-                    w_12 = -W_11 @ beta
+                    # w_12 = -W_11 @ beta
+                    w_12 = W_11 @ beta
+
                     W[_12] = w_12
                     W[_21] = w_12
-                    Theta[_22] = 1/(s_22 + beta @ w_12)
-                    Theta[_12] = beta*Theta[_22]
-                else:  # mazumder
-                    theta_12 = beta / s_22
-                    theta_22 = 1/s_22 + theta_12 @ inv_Theta_11 @ theta_12
 
-                    Theta[_12] = theta_12
-                    Theta[_21] = theta_12
-                    Theta[_22] = theta_22
+                    # Theta[_22] = 1/(s_22 + beta @ w_12)
+                    Theta[_22] = 1/(w_22 - beta @ w_12)
 
-                    w_22 = 1/(theta_22 - theta_12 @ inv_Theta_11 @ theta_12)
-                    w_12 = -w_22*inv_Theta_11 @ theta_12
-                    W_11 = inv_Theta_11 + np.outer(w_12, w_12)/w_22
-                    W[_11] = W_11
-                    W[_12] = w_12
-                    W[_21] = w_12
-                    W[_22] = w_22
+                    # Theta[_12] = beta*Theta[_22]
+                    Theta[_12] = -beta*Theta[_22]
+
+                # else:  # mazumder
+                #     theta_12 = beta / s_22
+                #     theta_22 = 1/s_22 + theta_12 @ inv_Theta_11 @ theta_12
+
+                #     Theta[_12] = theta_12
+                #     Theta[_21] = theta_12
+                #     Theta[_22] = theta_22
+
+                #     w_22 = 1/(theta_22 - theta_12 @ inv_Theta_11 @ theta_12)
+                #     w_12 = -w_22*inv_Theta_11 @ theta_12
+                #     W_11 = inv_Theta_11 + np.outer(w_12, w_12)/w_22
+                #     W[_11] = W_11
+                #     W[_12] = w_12
+                #     W[_21] = w_12
+                #     W[_22] = w_22
 
             if norm(Theta - Theta_old) < self.tol:
                 print(f"Weighted Glasso converged at CD epoch {it + 1}")

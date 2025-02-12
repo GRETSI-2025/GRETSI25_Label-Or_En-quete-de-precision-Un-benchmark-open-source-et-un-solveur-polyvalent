@@ -5,13 +5,18 @@ with safe_import_context() as import_ctx:
 
     from benchmark_utils import GraphicalLasso
 
+    from sklearn.linear_model import _cd_fast as cd_fast
+
 
 class Solver(BaseSolver):
 
     name = 'skglm'
 
     parameters = {
-        'algo': ["mazumder", "banerjee"],
+        'algo': [
+            "banerjee",
+            # "mazumder",
+        ],
     }
 
     requirements = ["numpy"]
@@ -20,18 +25,11 @@ class Solver(BaseSolver):
         self.S = S
         self.alpha = alpha
 
-        self.tol = 0.
-        if self.algo == "banerjee":
-            # Banerjee does not support warm start for now
-            self.model = GraphicalLasso(alpha=self.alpha,
-                                        algo=self.algo,
-                                        warm_start=False,
-                                        tol=self.tol)
-        else:
-            self.model = GraphicalLasso(alpha=self.alpha,
-                                        algo=self.algo,
-                                        warm_start=True,
-                                        tol=self.tol)
+        self.tol = 1e-18
+        self.model = GraphicalLasso(alpha=self.alpha,
+                                    algo=self.algo,
+                                    warm_start=False,
+                                    tol=self.tol)
 
         # Cache Numba compilation
         self.run(2)

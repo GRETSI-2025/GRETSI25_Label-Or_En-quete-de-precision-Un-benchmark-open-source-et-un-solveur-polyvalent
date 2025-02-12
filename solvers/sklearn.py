@@ -8,7 +8,7 @@ with safe_import_context() as import_ctx:
 
 class Solver(BaseSolver):
 
-    name = 'Scikit-Learn'
+    name = 'sklearn'
 
     parameters = {}
 
