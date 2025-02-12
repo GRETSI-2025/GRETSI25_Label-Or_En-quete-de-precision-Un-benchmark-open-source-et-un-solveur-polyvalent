@@ -21,7 +21,8 @@ class Solver(BaseSolver):
         'lasso_solver': [
             "cd_fast",
             "anderson_cd",
-        ]
+        ],
+        "inner_tol": [1e-4],
     }
 
     requirements = ["numpy"]
@@ -36,7 +37,9 @@ class Solver(BaseSolver):
                                     algo=self.algo,
                                     lasso_solver=self.lasso_solver,
                                     warm_start=False,
-                                    tol=self.tol)
+                                    tol=self.tol,
+                                    inner_tol=self.inner_tol,
+                                    )
         warnings.filterwarnings('ignore', category=ConvergenceWarning)
         # Cache Numba compilation
         self.run(5)

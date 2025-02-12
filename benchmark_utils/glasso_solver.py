@@ -7,6 +7,7 @@ with safe_import_context() as import_ctx:
     from sklearn.utils.validation import check_random_state
     from sklearn.linear_model import _cd_fast as cd_fast
 
+    from numba import njit
     import scipy
 
     from skglm.solvers import AndersonCD
@@ -24,6 +25,7 @@ class GraphicalLasso():
                  max_iter=1000,
                  tol=1e-8,
                  warm_start=False,
+                 inner_tol=1e-4,
                  ):
         self.alpha = alpha
         self.weights = weights
@@ -32,6 +34,7 @@ class GraphicalLasso():
         self.max_iter = max_iter
         self.tol = tol
         self.warm_start = warm_start
+        self.inner_tol = inner_tol
 
     def fit(self, S):
         p = S.shape[-1]
@@ -62,9 +65,12 @@ class GraphicalLasso():
         penalty = compiled_clone(
             WeightedL1(alpha=self.alpha, weights=Weights[0, :-1]))
 
-        solver = AndersonCD(warm_start=True,
-                            fit_intercept=False,
-                            ws_strategy="fixpoint")
+        solver = AndersonCD(
+            warm_start=True,
+            fit_intercept=False,
+            ws_strategy="subdiff",
+            tol=self.inner_tol,
+        )
 
         W_11 = np.copy(W[1:, 1:], order="C")
         for it in range(self.max_iter):
@@ -121,6 +127,16 @@ class GraphicalLasso():
                         False,
                     )
                     beta = -beta
+                elif self.lasso_solver == "cd_numba":
+                    beta = (Theta[indices != col, col] /
+                            (Theta[col, col] + 1e-13))
+                    beta = cd_gram(
+                        W_11,
+                        s_12,
+                        x=beta,
+                        alpha=self.alpha,
+                        tol=self.inner_tol,
+                    )
 
                 if self.algo == "banerjee":
                     w_12 = -W_11 @ beta  # for us
@@ -165,3 +181,40 @@ class GraphicalLasso():
         # self.n_iter_ = it + 1
 
         return self
+
+
+@njit
+def ST(x, tau):
+    if x > tau:
+        return x-tau
+    elif x < -tau:
+        return x + tau
+    else:
+        return 0
+
+
+@njit
+def cd_gram(H, q, x, alpha, max_iter=1000, tol=1e-4):
+    """
+    Solve min .5 * x.T H x + q.T @ x + alpha * norm(x, 1).
+
+    H must be symmetric.
+    """
+    dim = H.shape[0]
+    lc = np.zeros(dim)
+    for j in range(dim):
+        lc[j] = H[j, j]
+
+    Hx = H @ x
+    for epoch in range(max_iter):
+        max_delta = 0  # max coeff change
+        for j in range(dim):
+            x_j_prev = x[j]
+            x[j] = ST(x[j] - (Hx[j] + q[j]) / lc[j], alpha/lc[j])
+            max_delta = max(max_delta, np.abs(x_j_prev - x[j]))
+            if x_j_prev != x[j]:
+                Hx += (x[j] - x_j_prev) * H[j]
+        # print(epoch, max_delta)
+        if max_delta < tol:
+            break
+    return x

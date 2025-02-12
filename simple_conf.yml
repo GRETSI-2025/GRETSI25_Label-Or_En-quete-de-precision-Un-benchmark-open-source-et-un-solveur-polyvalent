@@ -1,11 +1,11 @@
 objective:
   - "GLasso[reg=0.1]"
 solver:
-  - skglm[algo=banerjee]
+  - skglm[algo=banerjee,lasso_solver=["anderson_cd","cd_numba"],inner_tol=[1e-2,1e-3]]
   - sklearn
 dataset:
   # - simulated[n_samples=500,n_features=200]
-  - simulated[n_samples=300,n_features=100]
+  - simulated[n_samples=1000,n_features=400]
   # - simulated[n_samples=200,n_features=50]
 n-repetitions: 1
 n-jobs: 4
