@@ -25,7 +25,7 @@ class Solver(BaseSolver):
                                     tol=self.tol,
                                     )
 
-        self.run(2)
+        self.run(5)
 
     def run(self, n_iter):
 

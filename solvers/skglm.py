@@ -15,6 +15,10 @@ class Solver(BaseSolver):
             "banerjee",
             # "mazumder",
         ],
+        'lasso_solver': [
+            "cd_fast",
+            "anderson_cd",
+        ]
     }
 
     requirements = ["numpy"]
@@ -27,11 +31,12 @@ class Solver(BaseSolver):
         self.tol = 1e-18
         self.model = GraphicalLasso(alpha=self.alpha,
                                     algo=self.algo,
+                                    lasso_solver=self.lasso_solver,
                                     warm_start=False,
                                     tol=self.tol)
 
         # Cache Numba compilation
-        self.run(2)
+        self.run(5)
 
     def run(self, n_iter):
 

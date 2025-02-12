@@ -20,6 +20,7 @@ class GraphicalLasso():
                  alpha=1.,
                  weights=None,
                  algo="banerjee",
+                 lasso_solver="anderson_cd",
                  max_iter=1000,
                  tol=1e-8,
                  warm_start=False,
@@ -27,6 +28,7 @@ class GraphicalLasso():
         self.alpha = alpha
         self.weights = weights
         self.algo = algo
+        self.lasso_solver = lasso_solver
         self.max_iter = max_iter
         self.tol = tol
         self.warm_start = warm_start
@@ -49,7 +51,6 @@ class GraphicalLasso():
             Theta = self.precision_
             W = self.covariance_
         else:
-            # W = S.copy()  # + alpha*np.eye(p)
             W = S.copy()
             W *= 0.95
             W.flat[:: p + 1] = S.flat[:: p + 1]
@@ -78,47 +79,48 @@ class GraphicalLasso():
 
                 s_12 = S[col, indices != col]
 
-                # penalty.weights = Weights[_12]
+                if self.lasso_solver == "anderson_cd":
+                    # penalty.weights = Weights[_12]
+                    if self.algo == "banerjee":
+                        eps = np.finfo(np.float64).eps
+                        w_init = (Theta[indices != col, col] /
+                                  (Theta[col, col] + 1000 * eps))
+                        Xw_init = W_11 @ w_init
+                        Q = W_11
+                    # elif self.algo == "mazumder":
+                    #     inv_Theta_11 = W_11 - np.outer(w_12, w_12)/w_22
+                    #     Q = inv_Theta_11
+                    #     w_init = Theta[_12] * w_22
+                    #     Xw_init = inv_Theta_11 @ w_init
+                    # else:
+                    #     raise ValueError(f"Unsupported algo {self.algo}")
 
-                if self.algo == "banerjee":
+                    beta, _, _ = solver._solve(
+                        Q,
+                        s_12,
+                        datafit,
+                        penalty,
+                        w_init=w_init,
+                        Xw_init=Xw_init,
+                    )
+                elif self.lasso_solver == "cd_fast":
+                    enet_tol = 1e-4  # same as sklearn
                     eps = np.finfo(np.float64).eps
-                    w_init = Theta[indices != col, col] / \
-                        (Theta[col, col] + 1000 * eps)
-                    Xw_init = W_11 @ w_init
-                    Q = W_11
-                # elif self.algo == "mazumder":
-                #     inv_Theta_11 = W_11 - np.outer(w_12, w_12)/w_22
-                #     Q = inv_Theta_11
-                #     w_init = Theta[_12] * w_22
-                #     Xw_init = inv_Theta_11 @ w_init
-                # else:
-                #     raise ValueError(f"Unsupported algo {self.algo}")
-
-                beta, _, _ = solver._solve(
-                    Q,
-                    s_12,
-                    datafit,
-                    penalty,
-                    w_init=w_init,
-                    Xw_init=Xw_init,
-                )
-
-                # enet_tol = 1e-4  # same as sklearn
-                # eps = np.finfo(np.float64).eps
-                # beta = -(Theta[indices != col, col]
-                #          / (Theta[col, col] + 1000 * eps))
-                # beta, _, _, _ = cd_fast.enet_coordinate_descent_gram(
-                #     beta,
-                #     self.alpha,
-                #     0,
-                #     W_11,
-                #     s_12,
-                #     s_12,
-                #     self.max_iter,
-                #     enet_tol,
-                #     check_random_state(None),
-                #     False,
-                # )
+                    beta = -(Theta[indices != col, col]
+                             / (Theta[col, col] + 1000 * eps))
+                    beta, _, _, _ = cd_fast.enet_coordinate_descent_gram(
+                        beta,
+                        self.alpha,
+                        0,
+                        W_11,
+                        s_12,
+                        s_12,
+                        self.max_iter,
+                        enet_tol,
+                        check_random_state(None),
+                        False,
+                    )
+                    beta = -beta
 
                 if self.algo == "banerjee":
                     w_12 = -W_11 @ beta  # for us
