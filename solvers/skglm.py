@@ -1,7 +1,10 @@
 from benchopt import BaseSolver, safe_import_context
 
 with safe_import_context() as import_ctx:
+    import warnings
     import numpy as np
+
+    from sklearn.exceptions import ConvergenceWarning
 
     from benchmark_utils import GraphicalLasso
 
@@ -34,7 +37,7 @@ class Solver(BaseSolver):
                                     lasso_solver=self.lasso_solver,
                                     warm_start=False,
                                     tol=self.tol)
-
+        warnings.filterwarnings('ignore', category=ConvergenceWarning)
         # Cache Numba compilation
         self.run(5)
 
