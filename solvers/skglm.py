@@ -5,8 +5,6 @@ with safe_import_context() as import_ctx:
 
     from benchmark_utils import GraphicalLasso
 
-    from sklearn.linear_model import _cd_fast as cd_fast
-
 
 class Solver(BaseSolver):
 

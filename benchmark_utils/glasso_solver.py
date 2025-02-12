@@ -56,37 +56,36 @@ class GraphicalLasso():
             # Theta = np.linalg.pinv(W, hermitian=True)
             Theta = scipy.linalg.pinvh(W)
 
-        # datafit = compiled_clone(QuadraticHessian())
+        datafit = compiled_clone(QuadraticHessian())
 
-        # penalty = compiled_clone(
-        #     WeightedL1(alpha=self.alpha, weights=Weights[0, :-1]))
+        penalty = compiled_clone(
+            WeightedL1(alpha=self.alpha, weights=Weights[0, :-1]))
 
-        # solver = AndersonCD(warm_start=True,
-        #                     fit_intercept=False,
-        #                     ws_strategy="fixpoint")
+        solver = AndersonCD(warm_start=True,
+                            fit_intercept=False,
+                            ws_strategy="fixpoint")
 
+        W_11 = np.copy(W[1:, 1:], order="C")
         for it in range(self.max_iter):
             Theta_old = Theta.copy()
             for col in range(p):
-                indices_minus_col = np.concatenate(
-                    [indices[:col], indices[col + 1:]])
-                _11 = indices_minus_col[:, None], indices_minus_col[None]
-                _12 = indices_minus_col, col
-                _21 = col, indices_minus_col
-                _22 = col, col
+                if col > 0:
+                    di = col - 1
+                    W_11[di] = W[di][indices != col]
+                    W_11[:, di] = W[:, di][indices != col]
+                else:
+                    W_11[:] = W[1:, 1:]
 
-                W_11 = W[_11]
-                w_12 = W[_12]
-                w_22 = W[_22]
-                s_12 = S[_12]
-                s_22 = S[_22]
+                s_12 = S[col, indices != col]
 
                 # penalty.weights = Weights[_12]
 
-                # if self.algo == "banerjee":
-                #     w_init = Theta[_12]/Theta[_22]
-                #     Xw_init = W_11 @ w_init
-                #     Q = W_11
+                if self.algo == "banerjee":
+                    eps = np.finfo(np.float64).eps
+                    w_init = Theta[indices != col, col] / \
+                        (Theta[col, col] + 1000 * eps)
+                    Xw_init = W_11 @ w_init
+                    Q = W_11
                 # elif self.algo == "mazumder":
                 #     inv_Theta_11 = W_11 - np.outer(w_12, w_12)/w_22
                 #     Q = inv_Theta_11
@@ -95,43 +94,46 @@ class GraphicalLasso():
                 # else:
                 #     raise ValueError(f"Unsupported algo {self.algo}")
 
-                # beta, _, _ = solver._solve(
-                #     Q,
-                #     s_12,
-                #     datafit,
-                #     penalty,
-                #     w_init=w_init,
-                #     Xw_init=Xw_init,
-                # )
-
-                enet_tol = 1e-4  # same as sklearn
-                eps = np.finfo(np.float64).eps
-                beta = -(Theta[_12] / (Theta[_22] + 1000*eps))
-                beta, _, _, _ = cd_fast.enet_coordinate_descent_gram(
-                    beta,
-                    self.alpha,
-                    0,
-                    W_11,
+                beta, _, _ = solver._solve(
+                    Q,
                     s_12,
-                    s_12,
-                    self.max_iter,
-                    enet_tol,
-                    check_random_state(None),
-                    False,
+                    datafit,
+                    penalty,
+                    w_init=w_init,
+                    Xw_init=Xw_init,
                 )
 
+                # enet_tol = 1e-4  # same as sklearn
+                # eps = np.finfo(np.float64).eps
+                # beta = -(Theta[indices != col, col]
+                #          / (Theta[col, col] + 1000 * eps))
+                # beta, _, _, _ = cd_fast.enet_coordinate_descent_gram(
+                #     beta,
+                #     self.alpha,
+                #     0,
+                #     W_11,
+                #     s_12,
+                #     s_12,
+                #     self.max_iter,
+                #     enet_tol,
+                #     check_random_state(None),
+                #     False,
+                # )
+
                 if self.algo == "banerjee":
-                    # w_12 = -W_11 @ beta
-                    w_12 = W_11 @ beta
+                    w_12 = -W_11 @ beta  # for us
+                    # w_12 = W_11 @ beta
 
-                    W[_12] = w_12
-                    W[_21] = w_12
+                    W[col, indices != col] = w_12
+                    W[indices != col, col] = w_12
 
-                    # Theta[_22] = 1/(s_22 + beta @ w_12)
-                    Theta[_22] = 1/(w_22 - beta @ w_12)
+                    Theta[col, col] = 1/(W[col, col] + beta @ w_12)  # For us
+                    # Theta[col, col] = 1/(W[col, col] - beta @ w_12)
 
-                    # Theta[_12] = beta*Theta[_22]
-                    Theta[_12] = -beta*Theta[_22]
+                    Theta[indices != col, col] = beta*Theta[col, col]  # For us
+                    Theta[col, indices != col] = beta*Theta[col, col]
+                    # Theta[indices != col, col] = -beta*Theta[col, col]
+                    # Theta[col, indices != col] = -beta*Theta[col, col]
 
                 # else:  # mazumder
                 #     theta_12 = beta / s_22
