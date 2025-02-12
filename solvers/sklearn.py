@@ -22,7 +22,10 @@ class Solver(BaseSolver):
         self.tol = 1e-18
         self.model = GraphicalLasso(alpha=self.alpha,
                                     covariance="precomputed",
-                                    tol=self.tol)
+                                    tol=self.tol,
+                                    )
+
+        self.run(2)
 
     def run(self, n_iter):
 

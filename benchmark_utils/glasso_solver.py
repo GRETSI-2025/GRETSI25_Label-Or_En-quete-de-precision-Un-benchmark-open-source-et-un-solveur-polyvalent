@@ -7,6 +7,8 @@ with safe_import_context() as import_ctx:
     from sklearn.utils.validation import check_random_state
     from sklearn.linear_model import _cd_fast as cd_fast
 
+    import scipy
+
     from skglm.solvers import AndersonCD
     from skglm.datafits import QuadraticHessian
     from skglm.penalties import WeightedL1
@@ -51,11 +53,13 @@ class GraphicalLasso():
             W = S.copy()
             W *= 0.95
             W.flat[:: p + 1] = S.flat[:: p + 1]
-            Theta = np.linalg.pinv(W, hermitian=True)
+            # Theta = np.linalg.pinv(W, hermitian=True)
+            Theta = scipy.linalg.pinvh(W)
 
         # datafit = compiled_clone(QuadraticHessian())
-        penalty = compiled_clone(
-            WeightedL1(alpha=self.alpha, weights=Weights[0, :-1]))
+
+        # penalty = compiled_clone(
+        #     WeightedL1(alpha=self.alpha, weights=Weights[0, :-1]))
 
         # solver = AndersonCD(warm_start=True,
         #                     fit_intercept=False,
@@ -77,7 +81,7 @@ class GraphicalLasso():
                 s_12 = S[_12]
                 s_22 = S[_22]
 
-                penalty.weights = Weights[_12]
+                # penalty.weights = Weights[_12]
 
                 # if self.algo == "banerjee":
                 #     w_init = Theta[_12]/Theta[_22]
@@ -100,7 +104,7 @@ class GraphicalLasso():
                 #     Xw_init=Xw_init,
                 # )
 
-                enet_tol = 1e-4
+                enet_tol = 1e-4  # same as sklearn
                 eps = np.finfo(np.float64).eps
                 beta = -(Theta[_12] / (Theta[_22] + 1000*eps))
                 beta, _, _, _ = cd_fast.enet_coordinate_descent_gram(
