@@ -3,4 +3,7 @@ objective:
 solver:
   - sklearn
   - skglm[algo=banerjee]
+dataset:
+  - simulated[n_samples=200,n_features=100]
+  # - simulated[n_samples=200,n_features=50]
 n-repetitions: 1

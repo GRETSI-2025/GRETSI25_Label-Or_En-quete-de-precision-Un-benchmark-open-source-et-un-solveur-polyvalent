@@ -25,6 +25,7 @@ class Solver(BaseSolver):
         self.S = S
         self.alpha = alpha
 
+        # to stay comparable to sklearn solver
         self.tol = 1e-18
         self.model = GraphicalLasso(alpha=self.alpha,
                                     algo=self.algo,

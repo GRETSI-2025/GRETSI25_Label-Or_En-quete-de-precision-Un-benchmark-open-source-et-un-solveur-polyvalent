@@ -53,13 +53,13 @@ class GraphicalLasso():
             W.flat[:: p + 1] = S.flat[:: p + 1]
             Theta = np.linalg.pinv(W, hermitian=True)
 
-        datafit = compiled_clone(QuadraticHessian())
+        # datafit = compiled_clone(QuadraticHessian())
         penalty = compiled_clone(
             WeightedL1(alpha=self.alpha, weights=Weights[0, :-1]))
 
-        solver = AndersonCD(warm_start=True,
-                            fit_intercept=False,
-                            ws_strategy="fixpoint")
+        # solver = AndersonCD(warm_start=True,
+        #                     fit_intercept=False,
+        #                     ws_strategy="fixpoint")
 
         for it in range(self.max_iter):
             Theta_old = Theta.copy()

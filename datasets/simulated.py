@@ -9,7 +9,7 @@ with safe_import_context() as import_ctx:
 
 class Dataset(BaseDataset):
 
-    name = "Simulated i.i.d. Gaussian"
+    name = "simulated"
 
     parameters = {
         'n_samples, n_features': [
