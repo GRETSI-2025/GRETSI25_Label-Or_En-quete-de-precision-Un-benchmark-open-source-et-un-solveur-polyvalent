@@ -73,6 +73,7 @@ class GraphicalLasso():
         )
 
         W_11 = np.copy(W[1:, 1:], order="C")
+        eps = np.finfo(np.float64).eps
         for it in range(self.max_iter):
             Theta_old = Theta.copy()
             for col in range(p):
@@ -85,35 +86,34 @@ class GraphicalLasso():
 
                 s_12 = S[col, indices != col]
 
-                if self.lasso_solver == "anderson_cd":
-                    # penalty.weights = Weights[_12]
-                    if self.algo == "banerjee":
-                        eps = np.finfo(np.float64).eps
-                        w_init = (Theta[indices != col, col] /
-                                  (Theta[col, col] + 1000 * eps))
-                        Xw_init = W_11 @ w_init
-                        Q = W_11
-                    # elif self.algo == "mazumder":
-                    #     inv_Theta_11 = W_11 - np.outer(w_12, w_12)/w_22
-                    #     Q = inv_Theta_11
-                    #     w_init = Theta[_12] * w_22
-                    #     Xw_init = inv_Theta_11 @ w_init
-                    # else:
-                    #     raise ValueError(f"Unsupported algo {self.algo}")
+                # if self.lasso_solver == "anderson_cd":
+                #     # penalty.weights = Weights[_12]
+                #     if self.algo == "banerjee":
+                #         eps = np.finfo(np.float64).eps
+                #         w_init = (Theta[indices != col, col] /
+                #                   (Theta[col, col] + 1000 * eps))
+                #         Xw_init = W_11 @ w_init
+                #         Q = W_11
+                #     elif self.algo == "mazumder":
+                #         inv_Theta_11 = W_11 - np.outer(w_12, w_12)/w_22
+                #         Q = inv_Theta_11
+                #         w_init = Theta[_12] * w_22
+                #         Xw_init = inv_Theta_11 @ w_init
+                #     else:
+                #         raise ValueError(f"Unsupported algo {self.algo}")
 
-                    beta, _, _ = solver._solve(
-                        Q,
-                        s_12,
-                        datafit,
-                        penalty,
-                        w_init=w_init,
-                        Xw_init=Xw_init,
-                    )
-                elif self.lasso_solver == "cd_fast":
-                    # enet_tol = 1e-4  # same as sklearn
-                    # eps = np.finfo(np.float64).eps
-                    beta = -(Theta[indices != col, col]
-                             / (Theta[col, col] + 1e-13))
+                #     beta, _, _ = solver._solve(
+                #         Q,
+                #         s_12,
+                #         datafit,
+                #         penalty,
+                #         w_init=w_init,
+                #         Xw_init=Xw_init,
+                #     )
+                beta = (Theta[indices != col, col]
+                        / (Theta[col, col] + 1000*eps))
+                if self.lasso_solver == "cd_fast":
+                    beta = -beta
                     beta, _, _, _ = cd_fast.enet_coordinate_descent_gram(
                         beta,
                         self.alpha,
@@ -129,9 +129,8 @@ class GraphicalLasso():
                     beta = -beta
 
                 elif self.lasso_solver == "cd_numba":
-                    beta = (Theta[indices != col, col] /
-                            (Theta[col, col] + 1e-13))
-
+                    # beta = (Theta[indices != col, col] /
+                    #         (Theta[col, col] + 1000*eps))
                     beta = cd_gram(
                         W_11,
                         s_12,
@@ -142,8 +141,8 @@ class GraphicalLasso():
                     )
 
                 elif self.lasso_solver == "anderson_cd_numba":
-                    beta = (Theta[indices != col, col] /
-                            (Theta[col, col] + 1e-13))
+                    # beta = (Theta[indices != col, col] /
+                    #         (Theta[col, col] + 1000*eps))
                     beta = cd_gram(
                         W_11,
                         s_12,
