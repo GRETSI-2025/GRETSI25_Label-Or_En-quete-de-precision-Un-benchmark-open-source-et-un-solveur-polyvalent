@@ -18,7 +18,7 @@ class Dataset(BaseDataset):
             (300, 300),
             (3000, 1000),
         ],
-        'sparsity_controller': [0.5, 0.9],
+        'sparsity_controller': [0.9],
         'random_state': [0],
     }
 
