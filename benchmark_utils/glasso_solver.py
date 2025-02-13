@@ -60,17 +60,17 @@ class GraphicalLasso():
             # Theta = np.linalg.pinv(W, hermitian=True)
             Theta = scipy.linalg.pinvh(W)
 
-        datafit = compiled_clone(QuadraticHessian())
+        # datafit = compiled_clone(QuadraticHessian())
 
-        penalty = compiled_clone(
-            WeightedL1(alpha=self.alpha, weights=Weights[0, :-1]))
+        # penalty = compiled_clone(
+        #     WeightedL1(alpha=self.alpha, weights=Weights[0, :-1]))
 
-        solver = AndersonCD(
-            warm_start=True,
-            fit_intercept=False,
-            ws_strategy="subdiff",
-            tol=self.inner_tol,
-        )
+        # solver = AndersonCD(
+        #     warm_start=True,
+        #     fit_intercept=False,
+        #     ws_strategy="subdiff",
+        #     tol=self.inner_tol,
+        # )
 
         W_11 = np.copy(W[1:, 1:], order="C")
         eps = np.finfo(np.float64).eps
@@ -129,8 +129,6 @@ class GraphicalLasso():
                     beta = -beta
 
                 elif self.lasso_solver == "cd_numba":
-                    # beta = (Theta[indices != col, col] /
-                    #         (Theta[col, col] + 1000*eps))
                     beta = cd_gram(
                         W_11,
                         s_12,
@@ -141,8 +139,6 @@ class GraphicalLasso():
                     )
 
                 elif self.lasso_solver == "anderson_cd_numba":
-                    # beta = (Theta[indices != col, col] /
-                    #         (Theta[col, col] + 1000*eps))
                     beta = cd_gram(
                         W_11,
                         s_12,
@@ -154,19 +150,15 @@ class GraphicalLasso():
                     )
 
                 if self.algo == "banerjee":
-                    w_12 = -W_11 @ beta  # for us
-                    # w_12 = W_11 @ beta
+                    w_12 = -W_11 @ beta
 
                     W[col, indices != col] = w_12
                     W[indices != col, col] = w_12
 
                     Theta[col, col] = 1/(W[col, col] + beta @ w_12)  # For us
-                    # Theta[col, col] = 1/(W[col, col] - beta @ w_12)
 
                     Theta[indices != col, col] = beta*Theta[col, col]  # For us
                     Theta[col, indices != col] = beta*Theta[col, col]
-                    # Theta[indices != col, col] = -beta*Theta[col, col]
-                    # Theta[col, indices != col] = -beta*Theta[col, col]
 
                 # else:  # mazumder
                 #     theta_12 = beta / s_22
@@ -197,15 +189,19 @@ class GraphicalLasso():
 
         return self
 
+# @njit
+# def ST(x, tau):
+#     if x > tau:
+#         return x-tau
+#     elif x < -tau:
+#         return x + tau
+#     else:
+#         return 0
+
 
 @njit
 def ST(x, tau):
-    if x > tau:
-        return x-tau
-    elif x < -tau:
-        return x + tau
-    else:
-        return 0
+    return np.sign(x) * np.maximum(np.abs(x) - tau, 0)
 
 
 @njit
