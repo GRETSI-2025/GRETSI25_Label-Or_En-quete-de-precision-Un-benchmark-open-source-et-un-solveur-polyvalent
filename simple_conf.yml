@@ -1,7 +1,7 @@
 objective:
   - "GLasso[reg=0.1]"
 solver:
-  - skglm[algo=banerjee,lasso_solver=["anderson_cd_numba","cd_numba","cd_fast"],inner_tol=[1e-4]]
+  - skglm[algo=banerjee,lasso_solver=["anderson_cd_numba","cd_numba"],inner_tol=[1e-4]]
   - sklearn[inner_tol=[1e-4]]
 dataset:
   - simulated[n_samples=1000,n_features=100]

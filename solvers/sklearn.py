@@ -29,7 +29,7 @@ class Solver(BaseSolver):
                                     )
         warnings.filterwarnings('ignore', category=ConvergenceWarning)
         # Same as for skglm
-        self.run(5)
+        # self.run(5)
 
     def run(self, n_iter):
 
