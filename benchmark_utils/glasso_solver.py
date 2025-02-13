@@ -236,7 +236,7 @@ def cd_gram(H, q, x, alpha, max_iter=1000, tol=1e-4):
     return x
 
 
-# @njit
+@njit
 def anderson_cd_gram(H, q, x, alpha, max_iter=1000, tol=1e-4):
     """
     Solve cd_gram with extrapolation.
@@ -244,7 +244,7 @@ def anderson_cd_gram(H, q, x, alpha, max_iter=1000, tol=1e-4):
     H must be symmetric.
     """
 
-    K = 4
+    K = 3
     buffer_filler = 0
     anderson_mem = np.zeros((x.shape[0], K+1))
 
@@ -275,7 +275,7 @@ def anderson_cd_gram(H, q, x, alpha, max_iter=1000, tol=1e-4):
             buffer_filler += 1
 
         else:
-            U = np.diff(anderson_mem, axis=1)
+            U = np.diff(np.ascontiguousarray(anderson_mem), axis=1)
             try:
                 c = np.linalg.solve(U.T @ U, np.ones(K))
 
