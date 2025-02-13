@@ -110,10 +110,10 @@ class GraphicalLasso():
                         Xw_init=Xw_init,
                     )
                 elif self.lasso_solver == "cd_fast":
-                    enet_tol = 1e-4  # same as sklearn
-                    eps = np.finfo(np.float64).eps
+                    # enet_tol = 1e-4  # same as sklearn
+                    # eps = np.finfo(np.float64).eps
                     beta = -(Theta[indices != col, col]
-                             / (Theta[col, col] + 1000 * eps))
+                             / (Theta[col, col] + 1e-13))
                     beta, _, _, _ = cd_fast.enet_coordinate_descent_gram(
                         beta,
                         self.alpha,
@@ -122,12 +122,26 @@ class GraphicalLasso():
                         s_12,
                         s_12,
                         self.max_iter,
-                        enet_tol,
+                        self.inner_tol,
                         check_random_state(None),
                         False,
                     )
                     beta = -beta
+
                 elif self.lasso_solver == "cd_numba":
+                    beta = (Theta[indices != col, col] /
+                            (Theta[col, col] + 1e-13))
+
+                    beta = cd_gram(
+                        W_11,
+                        s_12,
+                        x=beta,
+                        alpha=self.alpha,
+                        anderson=False,
+                        tol=self.inner_tol,
+                    )
+
+                elif self.lasso_solver == "anderson_cd_numba":
                     beta = (Theta[indices != col, col] /
                             (Theta[col, col] + 1e-13))
                     beta = cd_gram(
@@ -135,17 +149,8 @@ class GraphicalLasso():
                         s_12,
                         x=beta,
                         alpha=self.alpha,
-                        tol=self.inner_tol,
-                    )
-
-                elif self.lasso_solver == "anderson_cd_numba":
-                    beta = (Theta[indices != col, col] /
-                            (Theta[col, col] + 1e-13))
-                    beta = anderson_cd_gram(
-                        W_11,
-                        s_12,
-                        x=beta,
-                        alpha=self.alpha,
+                        anderson=True,
+                        anderson_buffer=10,
                         tol=self.inner_tol,
                     )
 
@@ -205,48 +210,16 @@ def ST(x, tau):
 
 
 @njit
-def cd_gram(H, q, x, alpha, max_iter=1000, tol=1e-4):
+def cd_gram(H, q, x, alpha, anderson=False, anderson_buffer=0, max_iter=1000, tol=1e-4):
     """
-    Solve min .5 * x.T H x + q.T @ x + alpha * norm(x, 1).
+    Solve min .5 * x.T H x + q.T @ x + alpha * norm(x, 1) with(out) extrapolation.
 
     H must be symmetric.
     """
-    dim = H.shape[0]
-    lc = np.zeros(dim)
-    for j in range(dim):
-        lc[j] = H[j, j]
-
-    Hx = H @ x
-    for epoch in range(max_iter):
-        max_delta = 0  # max coeff change
-
-        for j in range(dim):
-
-            x_j_prev = x[j]
-            x[j] = ST(x[j] - (Hx[j] + q[j]) / lc[j], alpha/lc[j])
-            max_delta = max(max_delta, np.abs(x_j_prev - x[j]))
-
-            if x_j_prev != x[j]:
-                Hx += (x[j] - x_j_prev) * H[j]
-
-        # print(epoch, max_delta)
-        if max_delta < tol:
-            break
-
-    return x
-
-
-@njit
-def anderson_cd_gram(H, q, x, alpha, max_iter=1000, tol=1e-4):
-    """
-    Solve cd_gram with extrapolation.
-
-    H must be symmetric.
-    """
-
-    K = 10
-    buffer_filler = 0
-    anderson_mem = np.zeros((x.shape[0], K+1))
+    if anderson == True:
+        K = anderson_buffer
+        buffer_filler = 0
+        anderson_mem = np.zeros((x.shape[0], K+1))
 
     dim = H.shape[0]
     lc = np.zeros(dim)
@@ -270,22 +243,23 @@ def anderson_cd_gram(H, q, x, alpha, max_iter=1000, tol=1e-4):
         if max_delta < tol:
             break
 
-        if buffer_filler <= K:
-            anderson_mem[:, buffer_filler] = x
-            buffer_filler += 1
+        if anderson:
+            if buffer_filler <= K:
+                anderson_mem[:, buffer_filler] = x
+                buffer_filler += 1
 
-        else:
-            U = np.diff(anderson_mem)
-            # try:
-            c = np.linalg.solve(U.T @ U, np.ones(K))
+            else:
+                U = np.diff(anderson_mem)
+                # try:
+                c = np.linalg.solve(U.T @ U, np.ones(K))
 
-            C = c / np.sum(c)
+                C = c / np.sum(c)
 
-            x = anderson_mem[:, 1:] @ C
+                x = anderson_mem[:, 1:] @ C
 
-            buffer_filler = 0
-            # except:
-            #     print("did not extrapolate")
-            #     break
+                buffer_filler = 0
+                # except:
+                #     print("did not extrapolate")
+                #     break
 
     return x
