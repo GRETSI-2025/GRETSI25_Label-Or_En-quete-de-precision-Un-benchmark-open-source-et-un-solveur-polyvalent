@@ -244,7 +244,7 @@ def anderson_cd_gram(H, q, x, alpha, max_iter=1000, tol=1e-4):
     H must be symmetric.
     """
 
-    K = 3
+    K = 10
     buffer_filler = 0
     anderson_mem = np.zeros((x.shape[0], K+1))
 
@@ -276,16 +276,16 @@ def anderson_cd_gram(H, q, x, alpha, max_iter=1000, tol=1e-4):
 
         else:
             U = np.diff(anderson_mem)
-            try:
-                c = np.linalg.solve(U.T @ U, np.ones(K))
+            # try:
+            c = np.linalg.solve(U.T @ U, np.ones(K))
 
-                C = c / np.sum(c)
+            C = c / np.sum(c)
 
-                x = anderson_mem[:, 1:] @ C
+            x = anderson_mem[:, 1:] @ C
 
-                buffer_filler = 0
-            except:
-                print("did not extrapolate")
-                break
+            buffer_filler = 0
+            # except:
+            #     print("did not extrapolate")
+            #     break
 
     return x
