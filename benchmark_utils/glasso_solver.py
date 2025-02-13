@@ -275,7 +275,7 @@ def anderson_cd_gram(H, q, x, alpha, max_iter=1000, tol=1e-4):
             buffer_filler += 1
 
         else:
-            U = np.diff(np.ascontiguousarray(anderson_mem), axis=1)
+            U = np.diff(anderson_mem)
             try:
                 c = np.linalg.solve(U.T @ U, np.ones(K))
 
