@@ -22,7 +22,7 @@ class GraphicalLasso():
                  weights=None,
                  algo="banerjee",
                  lasso_solver="anderson_cd",
-                 max_iter=1000,
+                 max_iter=100,
                  tol=1e-8,
                  warm_start=False,
                  inner_tol=1e-4,
@@ -53,10 +53,12 @@ class GraphicalLasso():
                     "Banerjee does not support warm start for now.")
             Theta = self.precision_
             W = self.covariance_
+
         else:
             W = S.copy()
             W *= 0.95
-            W.flat[:: p + 1] = S.flat[:: p + 1]
+            diagonal = S.flat[:: p + 1]
+            W.flat[:: p + 1] = diagonal
             # Theta = np.linalg.pinv(W, hermitian=True)
             Theta = scipy.linalg.pinvh(W)
 
@@ -75,7 +77,7 @@ class GraphicalLasso():
         W_11 = np.copy(W[1:, 1:], order="C")
         eps = np.finfo(np.float64).eps
         for it in range(self.max_iter):
-            Theta_old = Theta.copy()
+            # Theta_old = Theta.copy()
             for col in range(p):
                 if col > 0:
                     di = col - 1
@@ -136,6 +138,7 @@ class GraphicalLasso():
                         alpha=self.alpha,
                         anderson=False,
                         tol=self.inner_tol,
+                        max_iter=self.max_iter,
                     )
 
                 elif self.lasso_solver == "anderson_cd_numba":
@@ -145,8 +148,9 @@ class GraphicalLasso():
                         x=beta,
                         alpha=self.alpha,
                         anderson=True,
-                        anderson_buffer=10,
+                        anderson_buffer=3,
                         tol=self.inner_tol,
+                        max_iter=self.max_iter,
                     )
 
                 if self.algo == "banerjee":
@@ -176,14 +180,14 @@ class GraphicalLasso():
                 #     W[_21] = w_12
                 #     W[_22] = w_22
 
-            if norm(Theta - Theta_old) < self.tol:
-                print(f"Weighted Glasso converged at CD epoch {it + 1}")
-                break
-        else:
-            print(
+            # if norm(Theta - Theta_old) < self.tol:
+            #     print(f"Weighted Glasso converged at CD epoch {it + 1}")
+            #     break
+        # else:
+        #     print(
                 # f"Not converged at epoch {it + 1}, "
                 # f"diff={norm(Theta - Theta_old):.2e}"
-            )
+        #     )
         self.precision_, self.covariance_ = Theta, W
         # self.n_iter_ = it + 1
 
@@ -205,7 +209,7 @@ def ST(x, tau):
 
 
 @njit
-def cd_gram(H, q, x, alpha, anderson=False, anderson_buffer=0, max_iter=1000, tol=1e-4):
+def cd_gram(H, q, x, alpha, anderson=False, anderson_buffer=0, max_iter=100, tol=1e-4):
     """
     Solve min .5 * x.T H x + q.T @ x + alpha * norm(x, 1) with(out) extrapolation.
 
@@ -235,7 +239,7 @@ def cd_gram(H, q, x, alpha, anderson=False, anderson_buffer=0, max_iter=1000, to
                 Hx += (x[j] - x_j_prev) * H[j]
 
         # print(epoch, max_delta)
-        if max_delta < tol:
+        if max_delta <= tol:
             break
 
         if anderson:
@@ -245,7 +249,6 @@ def cd_gram(H, q, x, alpha, anderson=False, anderson_buffer=0, max_iter=1000, to
 
             else:
                 U = np.diff(anderson_mem)
-                # try:
                 c = np.linalg.solve(U.T @ U, np.ones(K))
 
                 C = c / np.sum(c)
@@ -253,8 +256,4 @@ def cd_gram(H, q, x, alpha, anderson=False, anderson_buffer=0, max_iter=1000, to
                 x = anderson_mem[:, 1:] @ C
 
                 buffer_filler = 0
-                # except:
-                #     print("did not extrapolate")
-                #     break
-
     return x

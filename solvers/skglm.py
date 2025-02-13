@@ -20,7 +20,7 @@ class Solver(BaseSolver):
         ],
         'lasso_solver': [
             "cd_fast",
-            "anderson_cd",
+            "cd_numba",
             "anderson_cd_numba",
         ],
         "inner_tol": [1e-4],
