@@ -208,13 +208,63 @@ def cd_gram(H, q, x, alpha, max_iter=1000, tol=1e-4):
     Hx = H @ x
     for epoch in range(max_iter):
         max_delta = 0  # max coeff change
+
         for j in range(dim):
+
             x_j_prev = x[j]
             x[j] = ST(x[j] - (Hx[j] + q[j]) / lc[j], alpha/lc[j])
             max_delta = max(max_delta, np.abs(x_j_prev - x[j]))
+
             if x_j_prev != x[j]:
                 Hx += (x[j] - x_j_prev) * H[j]
+
         # print(epoch, max_delta)
         if max_delta < tol:
             break
+
+    return x
+
+
+@njit
+def anderson_cd_gram(H, q, x, alpha, max_iter=1000, tol=1e-4):
+    """
+    Solve cd_gram with extrapolation.
+
+    H must be symmetric.
+    """
+
+    anderson_mem_size = 4
+    anderson_mem = np.zeros((x.shape[0], anderson_mem_size+1))
+
+    dim = H.shape[0]
+    lc = np.zeros(dim)
+    for j in range(dim):
+        lc[j] = H[j, j]
+
+    Hx = H @ x
+    for epoch in range(max_iter):
+        max_delta = 0  # max coeff change
+
+        for j in range(dim):
+
+            x_j_prev = x[j]
+            x[j] = ST(x[j] - (Hx[j] + q[j]) / lc[j], alpha/lc[j])
+            max_delta = max(max_delta, np.abs(x_j_prev - x[j]))
+
+            if x_j_prev != x[j]:
+                Hx += (x[j] - x_j_prev) * H[j]
+
+        # print(epoch, max_delta)
+        if max_delta < tol:
+            break
+
+        anderson_mem[:, epoch]
+
+        if epoch > anderson_mem_size:
+            U = np.diff(anderson_mem, axis=1)
+
+            c = np.solve(U.T @ U, np.ones(anderson_mem_size))
+
+            x = c / np.sum(c)
+
     return x
