@@ -138,6 +138,17 @@ class GraphicalLasso():
                         tol=self.inner_tol,
                     )
 
+                elif self.lasso_solver == "anderson_cd_numba":
+                    beta = (Theta[indices != col, col] /
+                            (Theta[col, col] + 1e-13))
+                    beta = anderson_cd_gram(
+                        W_11,
+                        s_12,
+                        x=beta,
+                        alpha=self.alpha,
+                        tol=self.inner_tol,
+                    )
+
                 if self.algo == "banerjee":
                     w_12 = -W_11 @ beta  # for us
                     # w_12 = W_11 @ beta
@@ -225,7 +236,7 @@ def cd_gram(H, q, x, alpha, max_iter=1000, tol=1e-4):
     return x
 
 
-@njit
+# @njit
 def anderson_cd_gram(H, q, x, alpha, max_iter=1000, tol=1e-4):
     """
     Solve cd_gram with extrapolation.
@@ -233,8 +244,9 @@ def anderson_cd_gram(H, q, x, alpha, max_iter=1000, tol=1e-4):
     H must be symmetric.
     """
 
-    anderson_mem_size = 4
-    anderson_mem = np.zeros((x.shape[0], anderson_mem_size+1))
+    K = 4
+    buffer_filler = 0
+    anderson_mem = np.zeros((x.shape[0], K+1))
 
     dim = H.shape[0]
     lc = np.zeros(dim)
@@ -258,13 +270,22 @@ def anderson_cd_gram(H, q, x, alpha, max_iter=1000, tol=1e-4):
         if max_delta < tol:
             break
 
-        anderson_mem[:, epoch]
+        if buffer_filler <= K:
+            anderson_mem[:, buffer_filler] = x
+            buffer_filler += 1
 
-        if epoch > anderson_mem_size:
+        else:
             U = np.diff(anderson_mem, axis=1)
+            try:
+                c = np.linalg.solve(U.T @ U, np.ones(K))
 
-            c = np.solve(U.T @ U, np.ones(anderson_mem_size))
+                C = c / np.sum(c)
 
-            x = c / np.sum(c)
+                x = anderson_mem[:, 1:] @ C
+
+                buffer_filler = 0
+            except:
+                print("did not extrapolate")
+                break
 
     return x
