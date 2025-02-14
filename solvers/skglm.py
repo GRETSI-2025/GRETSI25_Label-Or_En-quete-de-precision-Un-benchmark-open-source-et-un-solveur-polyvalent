@@ -22,9 +22,7 @@ class Solver(BaseSolver):
             "cd_fast",
             "cd_numba",
             "anderson_cd_numba",
-        ],
-        "inner_tol": [1e-4],
-    }
+        ], }
 
     requirements = ["numpy"]
 
@@ -39,7 +37,7 @@ class Solver(BaseSolver):
                                     lasso_solver=self.lasso_solver,
                                     warm_start=False,
                                     tol=self.tol,
-                                    inner_tol=self.inner_tol,
+                                    inner_tol=1e-4,
                                     )
         warnings.filterwarnings('ignore', category=ConvergenceWarning)
         # Cache Numba compilation

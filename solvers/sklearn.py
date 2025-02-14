@@ -10,9 +10,7 @@ with safe_import_context() as import_ctx:
 class Solver(BaseSolver):
     name = 'sklearn'
 
-    parameters = {
-        "inner_tol": [1e-4],
-    }
+    parameters = {}
 
     requirements = ["numpy"]
 
@@ -25,7 +23,7 @@ class Solver(BaseSolver):
         self.model = GraphicalLasso(alpha=self.alpha,
                                     covariance="precomputed",
                                     tol=self.tol,
-                                    enet_tol=self.inner_tol,
+                                    enet_tol=1e-4,
                                     )
         warnings.filterwarnings('ignore', category=ConvergenceWarning)
         # Same as for skglm
