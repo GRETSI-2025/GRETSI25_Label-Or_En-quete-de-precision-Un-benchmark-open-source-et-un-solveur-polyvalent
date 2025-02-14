@@ -11,7 +11,7 @@ class Solver(BaseSolver):
     name = 'gglasso'
 
     parameters = {
-        "inner_tol": [1e-4],
+        # "inner_tol": [1e-4],
     }
 
     requirements = ["numpy"]
