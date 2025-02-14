@@ -40,6 +40,7 @@ class Solver(BaseSolver):
         #     # 'max_iter': n_iter
         # })
 
+        # gglasso is not robust to max_iter=0
         if n_iter > 0:
             sol = ADMM_SGL(S=self.S,
                            lambda1=self.alpha,
