@@ -35,17 +35,24 @@ class Solver(BaseSolver):
 
     def run(self, n_iter):
 
-        # self.model.solve(solver_params={'tol': self.tol,
-        #                                 'max_iter': n_iter})
+        # self.model.solve(solver_params={
+        #     # 'tol': self.tol,
+        #     # 'max_iter': n_iter
+        # })
 
-        sol = ADMM_SGL(S=self.S,
-                       lambda1=self.alpha,
-                       # This is what their wrapper does
-                       Omega_0=np.eye(self.S.shape[0]),
-                       max_iter=n_iter,
-                       tol=self.tol)
+        if n_iter > 0:
+            sol = ADMM_SGL(S=self.S,
+                           lambda1=self.alpha,
+                           # This is what their wrapper does
+                           Omega_0=np.eye(self.S.shape[0]),
+                           max_iter=n_iter,
+                           tol=self.tol
+                           )
+            self.Theta = sol[0]['Theta']
+        else:
+            self.Theta = np.eye(self.S.shape[0])
 
-        self.Theta = sol['Theta']
+        # self.Theta = self.model.solution.adjacency_
 
     def get_result(self):
         return dict(Theta=self.Theta)
