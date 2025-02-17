@@ -44,4 +44,5 @@ class Dataset(BaseDataset):
 
         return dict(S=S,
                     Theta_true=Theta_true,
+                    X=X,
                     )

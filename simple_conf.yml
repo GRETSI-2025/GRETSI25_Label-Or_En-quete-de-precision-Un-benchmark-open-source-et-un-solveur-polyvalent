@@ -1,10 +1,12 @@
 objective:
   - "GLasso[reg=0.1]"
 solver:
-  - skglm[algo=banerjee,lasso_solver=["anderson_cd_numba","cd_numba","cd_fast"]]
+  # - skglm[algo=banerjee,lasso_solver=["anderson_cd_numba","cd_numba","cd_fast"]]
   - sklearn
+  # - skggm # skggm behaves weirdly, quite unstable
   # - gglasso
 dataset:
-  - simulated[n_samples=1000,n_features=[50,100,250,500,1000]]
+  # - simulated[n_samples=1000,n_features=[50,100,250,500,1000]]
+  - simulated[n_samples=1000,n_features=[100,1000]]
 n-repetitions: 3 # 3 doesn't seem enough to account for variability
 n-jobs: 4

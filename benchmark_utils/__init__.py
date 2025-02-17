@@ -5,3 +5,4 @@
 # `safe_import_context` named "import_ctx", as follows:
 
 from .glasso_solver import GraphicalLasso
+from .skggm.inverse_covariance import QuicGraphicalLasso

@@ -20,11 +20,12 @@ class Objective(BaseObjective):
 
     min_benchopt_version = "1.5"
 
-    def set_data(self, S, Theta_true):
+    def set_data(self, S, Theta_true, X):
 
         self.S = S
         self.Theta_true = Theta_true
         self.alpha = self.reg * self._get_alpha_max(S)
+        self.X = X
 
     def evaluate_result(self, Theta):
 
@@ -53,6 +54,7 @@ class Objective(BaseObjective):
         return dict(
             S=self.S,
             alpha=self.alpha,
+            X=self.X,
         )
 
     def _get_alpha_max(self, S):
