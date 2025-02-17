@@ -153,16 +153,18 @@ class GraphicalLasso():
                         max_iter=self.max_iter,
                     )
 
-                if self.algo == "banerjee":
-                    w_12 = -W_11 @ beta
+                if self.algo == "banerjee":  # inverted W and Theta update orders to match sklearn
+                    # Theta[col, col] = 1 / \
+                    #     (W[col, col] + np.dot(beta, w_12))
+                    Theta[col, col] = 1 / \
+                        (W[col, col] + np.dot(beta, W[col, indices != col]))
+                    Theta[indices != col, col] = beta*Theta[col, col]
+                    Theta[col, indices != col] = beta*Theta[col, col]
 
+                    # w_12 = -W_11 @ beta
+                    w_12 = -np.dot(W_11, beta)  # This accelerates a lot ?
                     W[col, indices != col] = w_12
                     W[indices != col, col] = w_12
-
-                    Theta[col, col] = 1/(W[col, col] + beta @ w_12)  # For us
-
-                    Theta[indices != col, col] = beta*Theta[col, col]  # For us
-                    Theta[col, indices != col] = beta*Theta[col, col]
 
                 # else:  # mazumder
                 #     theta_12 = beta / s_22
@@ -237,8 +239,6 @@ def cd_gram(H, q, x, alpha, anderson=False, anderson_buffer=0, max_iter=100, tol
 
             if x_j_prev != x[j]:
                 Hx += (x[j] - x_j_prev) * H[j]
-
-        # print(epoch, max_delta)
         if max_delta <= tol:
             break
 
@@ -249,11 +249,10 @@ def cd_gram(H, q, x, alpha, anderson=False, anderson_buffer=0, max_iter=100, tol
 
             else:
                 U = np.diff(anderson_mem)
-                c = np.linalg.solve(U.T @ U, np.ones(K))
+                c = np.linalg.solve(np.dot(U.T, U), np.ones(K))
 
                 C = c / np.sum(c)
 
-                x = anderson_mem[:, 1:] @ C
-
+                x = np.dot(anderson_mem[:, 1:], C)
                 buffer_filler = 0
     return x

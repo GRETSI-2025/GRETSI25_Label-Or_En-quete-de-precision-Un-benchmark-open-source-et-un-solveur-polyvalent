@@ -41,7 +41,7 @@ class Solver(BaseSolver):
                                     )
         warnings.filterwarnings('ignore', category=ConvergenceWarning)
         # Cache Numba compilation
-        self.run(5)
+        self.run(2)
 
     def run(self, n_iter):
 
