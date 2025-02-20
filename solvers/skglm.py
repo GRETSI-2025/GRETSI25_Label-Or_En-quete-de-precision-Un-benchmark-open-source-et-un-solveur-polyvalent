@@ -22,11 +22,15 @@ class Solver(BaseSolver):
             "cd_fast",
             "cd_numba",
             "anderson_cd_numba",
-        ], }
+        ],
+        'outer_anderson': [
+            True,
+            False,
+        ]}
 
     requirements = ["numpy"]
 
-    def set_objective(self, S, alpha):
+    def set_objective(self, S, alpha, X):
         self.S = S
         self.alpha = alpha
 
@@ -36,6 +40,7 @@ class Solver(BaseSolver):
                                     algo=self.algo,
                                     lasso_solver=self.lasso_solver,
                                     warm_start=False,
+                                    outer_anderson=self.outer_anderson,
                                     tol=self.tol,
                                     inner_tol=1e-4,
                                     )

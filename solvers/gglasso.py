@@ -13,7 +13,7 @@ class Solver(BaseSolver):
 
     requirements = ["numpy"]
 
-    def set_objective(self, S, alpha):
+    def set_objective(self, S, alpha, X):
         self.S = S
         self.alpha = alpha
 

@@ -22,6 +22,7 @@ class GraphicalLasso():
                  weights=None,
                  algo="banerjee",
                  lasso_solver="anderson_cd",
+                 outer_anderson=False,
                  max_iter=100,
                  tol=1e-8,
                  warm_start=False,
@@ -31,6 +32,7 @@ class GraphicalLasso():
         self.weights = weights
         self.algo = algo
         self.lasso_solver = lasso_solver
+        self.outer_anderson = outer_anderson
         self.max_iter = max_iter
         self.tol = tol
         self.warm_start = warm_start
@@ -78,6 +80,12 @@ class GraphicalLasso():
         eps = np.finfo(np.float64).eps
         for it in range(self.max_iter):
             # Theta_old = Theta.copy()
+            if self.outer_anderson:
+                K = 4
+                buffer_filler = 0
+                anderson_mem = np.zeros(
+                    (Theta.shape[0], Theta.shape[0], K+1))  # p x (p-1) x (K+1)
+
             for col in range(p):
                 if col > 0:
                     di = col - 1
@@ -148,23 +156,24 @@ class GraphicalLasso():
                         x=beta,
                         alpha=self.alpha,
                         anderson=True,
-                        anderson_buffer=3,
+                        anderson_buffer=4,
                         tol=self.inner_tol,
                         max_iter=self.max_iter,
                     )
 
-                if self.algo == "banerjee":  # inverted W and Theta update orders to match sklearn
+                if self.algo == "banerjee":
                     # Theta[col, col] = 1 / \
                     #     (W[col, col] + np.dot(beta, w_12))
-                    Theta[col, col] = 1 / \
-                        (W[col, col] + np.dot(beta, W[col, indices != col]))
-                    Theta[indices != col, col] = beta*Theta[col, col]
-                    Theta[col, indices != col] = beta*Theta[col, col]
 
                     # w_12 = -W_11 @ beta
-                    w_12 = -np.dot(W_11, beta)  # This accelerates a lot ?
+                    w_12 = -np.dot(W_11, beta)
                     W[col, indices != col] = w_12
                     W[indices != col, col] = w_12
+
+                    Theta[col, col] = 1 / \
+                        (W[col, col] + np.dot(beta, w_12))
+                    Theta[indices != col, col] = beta*Theta[col, col]
+                    Theta[col, indices != col] = beta*Theta[col, col]
 
                 # else:  # mazumder
                 #     theta_12 = beta / s_22
@@ -181,6 +190,22 @@ class GraphicalLasso():
                 #     W[_12] = w_12
                 #     W[_21] = w_12
                 #     W[_22] = w_22
+
+            if self.outer_anderson:
+                if buffer_filler <= K:
+                    anderson_mem[:, :, buffer_filler] = W
+                    buffer_filler += 1
+                else:
+                    try:
+                        U = np.diff(anderson_mem)
+                        c = np.linalg.solve(np.dot(U.T, U), np.ones(K))
+                        C = c / np.sum(c)
+                        W = np.dot(np.ascontiguousarray(
+                            anderson_mem[:, :, 1:]), C)
+                        buffer_filler = 0
+                    except np.linalg.LinAlgError:
+                        print(f"linalg err at iter {it}")
+                        pass
 
             # if norm(Theta - Theta_old) < self.tol:
             #     print(f"Weighted Glasso converged at CD epoch {it + 1}")
@@ -227,20 +252,20 @@ def cd_gram(H, q, x, alpha, anderson=False, anderson_buffer=0, max_iter=100, tol
     for j in range(dim):
         lc[j] = H[j, j]
 
-    Hx = H @ x
+    # Hx = H @ x
+    Hx = np.dot(H, x)
     for epoch in range(max_iter):
         max_delta = 0  # max coeff change
 
         for j in range(dim):
-
             x_j_prev = x[j]
             x[j] = ST(x[j] - (Hx[j] + q[j]) / lc[j], alpha/lc[j])
             max_delta = max(max_delta, np.abs(x_j_prev - x[j]))
 
             if x_j_prev != x[j]:
                 Hx += (x[j] - x_j_prev) * H[j]
-        if max_delta <= tol:
-            break
+        # if max_delta <= tol:
+        #     break
 
         if anderson:
             if buffer_filler <= K:
@@ -248,11 +273,13 @@ def cd_gram(H, q, x, alpha, anderson=False, anderson_buffer=0, max_iter=100, tol
                 buffer_filler += 1
 
             else:
-                U = np.diff(anderson_mem)
-                c = np.linalg.solve(np.dot(U.T, U), np.ones(K))
-
-                C = c / np.sum(c)
-
-                x = np.dot(anderson_mem[:, 1:], C)
-                buffer_filler = 0
+                try:
+                    U = np.diff(anderson_mem)
+                    c = np.linalg.solve(np.dot(U.T, U), np.ones(K))
+                    C = c / np.sum(c)
+                    x = np.dot(np.ascontiguousarray(anderson_mem[:, 1:]), C)
+                    buffer_filler = 0
+                except:
+                    # print(f"no accel at epoch {epoch}")
+                    buffer_filler = 0
     return x

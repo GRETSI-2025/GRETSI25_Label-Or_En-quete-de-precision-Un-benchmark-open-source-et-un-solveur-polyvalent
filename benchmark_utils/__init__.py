@@ -6,3 +6,4 @@
 
 from .glasso_solver import GraphicalLasso
 from .skggm.inverse_covariance import QuicGraphicalLasso
+from .gista_solver import GraphicalIsta
