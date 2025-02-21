@@ -12,7 +12,7 @@ class GraphicalIsta():
     def __init__(self,
                  alpha=1.,
                  gamma_max=1.,
-                 back_track_const=0.9,
+                 back_track_const=0.5,
                  max_back_track=100,
                  max_iter=100,
                  tol=1e-8):
@@ -54,6 +54,7 @@ def gista_fit(Theta, W, S, alpha, gamma_max, back_track_const, max_back_track, m
     for it in range(max_iter):
         Theta, W, gamma = line_search(
             Theta, S, W, gamma, alpha, gamma_max, back_track_const, max_back_track)
+        # print(gamma)
     # else:
     #     print(
     #         f"Not converged at epoch {it + 1}, "
@@ -82,8 +83,7 @@ def line_search(Theta, S, W, gamma, alpha, gamma_max, back_track_const, max_back
 
         # Use cholesky to compute the inverse and the loss, instead
         W_next = np.linalg.pinv(Theta_next, hermitian=True)
-        # gamma = compute_gamma_init(Theta_next, Theta, W_next, W)
-        gamma = gamma_max
+        gamma = compute_gamma_init(Theta_next, Theta, W_next, W)
 
         Theta = Theta_next
         W = W_next
