@@ -20,7 +20,6 @@ class Solver(BaseSolver):
         # sklearn doesnt' accept tolerance 0
         self.tol = 1e-18
         self.model = GraphicalIsta(alpha=self.alpha,
-                                   gamma=0.01,
                                    tol=self.tol,
                                    )
         # Same as for skglm
