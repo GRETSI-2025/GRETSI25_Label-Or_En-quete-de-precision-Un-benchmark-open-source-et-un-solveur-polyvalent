@@ -6,7 +6,7 @@ solver:
   # - skglm[algo=banerjee,lasso_solver=["anderson_cd_numba","cd_numba","cd_fast"],outer_anderson=False]
   - g-ista
   # - skglm[algo=banerjee,lasso_solver=["anderson_cd_numba"]]
-  # - sklearn
+  - sklearn
   # - gglasso
   # - skggm # skggm behaves weirdly, quite unstable
 dataset:
