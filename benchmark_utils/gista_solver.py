@@ -72,7 +72,8 @@ def line_search(Theta, S, W, gamma, alpha, gamma_max, back_track_const, max_back
         Theta_next = gista_iter(Theta, S, W, gamma, alpha)
 
         try:
-            chol = np.linalg.cholesky(Theta_next)
+            L = np.linalg.cholesky(Theta_next)
+            L_inv = np.linalg.solve(L, np.eye(L.shape[0]))
         # except np.linalg.LinAlgError: # not supported by numba
         except:
             gamma *= back_track_const
@@ -82,9 +83,8 @@ def line_search(Theta, S, W, gamma, alpha, gamma_max, back_track_const, max_back
             continue
 
         # Use cholesky to compute the inverse and the loss, instead
-        W_next = np.linalg.pinv(Theta_next)
+        W_next = L_inv.T @ L_inv
         gamma = compute_gamma_init(Theta_next, Theta, W_next, W)
-        # gamma = gamma_max
 
         Theta = Theta_next
         W = W_next
@@ -97,7 +97,7 @@ def line_search(Theta, S, W, gamma, alpha, gamma_max, back_track_const, max_back
             Theta).min()**2  # This can be sped-up ?
         Theta = gista_iter(Theta, S, W, gamma_safe, alpha)
         gamma = gamma_max
-        # This can be computed with Cholesky ?
+        # This can be computed with Cholesky also ?
         W = np.linalg.pinv(Theta)
 
     return Theta, W, gamma
