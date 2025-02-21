@@ -5,15 +5,15 @@ with safe_import_context() as import_ctx:
     from numpy.linalg import norm
     from numba import njit
 
-    from benchmark_utils.utils import loss
+    from benchmark_utils.utils import loss, neg_llh
 
 
 class GraphicalIsta():
     def __init__(self,
                  alpha=1.,
                  gamma_max=1.,
-                 back_track_const=0.7,
-                 max_back_track=10,
+                 back_track_const=0.9,
+                 max_back_track=100,
                  max_iter=100,
                  tol=1e-8):
 
@@ -47,7 +47,7 @@ class GraphicalIsta():
         return self
 
 
-@njit
+# @njit
 def gista_fit(Theta, W, S, alpha, gamma_max, back_track_const, max_back_track, max_iter):
 
     gamma = gamma_max
@@ -63,29 +63,31 @@ def gista_fit(Theta, W, S, alpha, gamma_max, back_track_const, max_back_track, m
     return Theta, W
 
 
-@njit
+# @njit
 def line_search(Theta, S, W, gamma, alpha, gamma_max, back_track_const, max_back_track):
     """ Perform backtracking line-search and return correct Theta_next"""
 
     for back_track in range(max_back_track):
         Theta_next = gista_iter(Theta, S, W, gamma, alpha)
-
         try:
-            chol = np.linalg.cholesky(Theta)
+            chol = np.linalg.cholesky(Theta_next)
+
         except np.linalg.LinAlgError:
             gamma *= back_track_const
             continue
 
-        if loss(Theta_next) > quad_approx(S, Theta_next, Theta, W, S, gamma):
+        if neg_llh(Theta_next, S) > quad_approx(Theta_next, Theta, W, S, gamma):
             gamma *= back_track_const
             continue
 
         # Use cholesky to compute the inverse and the loss, instead
         W_next = np.linalg.pinv(Theta_next, hermitian=True)
-        gamma = compute_gamma_init(Theta_next, Theta, W_next, W)
+        # gamma = compute_gamma_init(Theta_next, Theta, W_next, W)
+        gamma = gamma_max
 
         Theta = Theta_next
         W = W_next
+        return Theta, W, gamma
 
     else:
         print(
@@ -95,27 +97,26 @@ def line_search(Theta, S, W, gamma, alpha, gamma_max, back_track_const, max_back
         Theta = gista_iter(Theta, S, W, gamma_safe, alpha)
         gamma = gamma_max
         # This can be computed with Cholesky ?
-        W = np.linalg.pinv(hermitian=True)
+        W = np.linalg.pinv(Theta, hermitian=True)
 
     return Theta, W, gamma
 
 
-@njit
+# @njit
 def gista_iter(Theta, S, W, gamma, alpha):
     """ An iteration of GISTA """
     return ST_off_diag(Theta - gamma*(S - W), alpha*gamma)
 
 
-@njit
+# @njit
 def compute_gamma_init(Theta_next, Theta, W_next, W):
     """ Compute Barzilai-Borwein step """
-    trace_num = ((Theta_next - Theta) * (Theta_next - Theta)).sum()
+    trace_num = ((Theta_next - Theta)**2).sum()
     trace_denom = ((Theta_next - Theta) * (W - W_next)).sum()
-
     return trace_num/trace_denom
 
 
-@njit
+# @njit
 def quad_approx(Theta_next, Theta, W, S, gamma):
     """ Quadratic approximation of loss around current iterate"""
 
@@ -127,7 +128,7 @@ def quad_approx(Theta_next, Theta, W, S, gamma):
     return Q
 
 
-@njit
+# @njit
 def ST_off_diag(x, tau):
     off_diag = np.sign(x) * np.maximum(np.abs(x) - tau, 0)
     diag = np.diag(x)

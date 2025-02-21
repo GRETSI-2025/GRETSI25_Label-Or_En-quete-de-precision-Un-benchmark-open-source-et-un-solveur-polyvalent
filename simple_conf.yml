@@ -12,6 +12,6 @@ solver:
 dataset:
   # - simulated[n_samples=1000,n_features=[50,100,250,500,1000]]
   # - simulated[n_samples=10_000,n_features=[1000]]
-  - simulated[n_samples=1000,n_features=[1000]]
+  - simulated[n_samples=1000,n_features=[100]]
 n-repetitions: 1 # 3 doesn't seem enough to account for variability
 # n-jobs: 1

@@ -6,10 +6,15 @@ with safe_import_context() as import_ctx:
 
 
 @njit
+def neg_llh(Theta, S):
+    return (-np.linalg.slogdet(Theta)[1] + (Theta * S).sum())
+
+
+@njit
 def loss(Theta, S, alpha):
     """ Compute Graphical Lasso loss function"""
-    neg_llh = (-np.linalg.slogdet(Theta)[1] +
-               (Theta * S).sum())
+
+    neg_llh = neg_llh(Theta, S)
     pen = alpha * np.sum(np.abs(Theta))
     # diagonal is not penalized:
     pen -= alpha * np.trace(np.abs(Theta))
