@@ -10,11 +10,6 @@ with safe_import_context() as import_ctx:
     from numba import njit
     import scipy
 
-    from skglm.solvers import AndersonCD
-    from skglm.datafits import QuadraticHessian
-    from skglm.penalties import WeightedL1
-    from skglm.utils.jit_compilation import compiled_clone
-
 
 class GraphicalLasso():
     def __init__(self,
@@ -86,8 +81,8 @@ class GraphicalLasso():
 
                 # penalty.weights = Weights[_12]
                 if self.algo == "dual":
-                    # w_init = (Theta[indices != col, col] /
-                    #           (Theta[col, col] + 1000 * eps))
+                    beta_init = (Theta[indices != col, col] /
+                                 (Theta[col, col] + 1000 * eps))
                     # Xw_init = W_11 @ w_init
                     Q = W_11
 
@@ -96,18 +91,15 @@ class GraphicalLasso():
                                     np.outer(W[indices != col, col],
                                              W[indices != col, col])/W[col, col])
                     Q = inv_Theta_11
-                    # w_init = Theta[_12] * w_22
+                    beta_init = Theta[indices != col, col] * W[col, col]
                     # Xw_init = inv_Theta_11 @ w_init
                 else:
                     raise ValueError(f"Unsupported algo {self.algo}")
 
-                beta = (Theta[indices != col, col]
-                        / (Theta[col, col] + 1000*eps))
-
                 beta = cd_gram(
-                    W_11,
+                    Q,
                     s_12,
-                    x=beta,
+                    x=beta_init,
                     alpha=self.alpha,
                     anderson=self.inner_anderson,
                     anderson_buffer=4,
@@ -129,33 +121,50 @@ class GraphicalLasso():
                     Theta[indices != col, col] = beta*Theta[col, col]
                     Theta[col, indices != col] = beta*Theta[col, col]
 
-                # else:  # primal
-                #     theta_12 = beta / s_22
-                #     theta_22 = 1/s_22 + theta_12 @ inv_Theta_11 @ theta_12
+                else:  # primal
+                    Theta[indices != col, col] = beta / S[col, col]
+                    Theta[col, indices != col] = beta / S[col, col]
 
-                #     Theta[_12] = theta_12
-                #     Theta[_21] = theta_12
-                #     Theta[_22] = theta_22
+                    Theta[col, col] = 1/S[col, col] + \
+                        Theta[indices != col,
+                              col] @ inv_Theta_11 @ Theta[indices != col, col]
 
-                #     w_22 = 1/(theta_22 - theta_12 @ inv_Theta_11 @ theta_12)
-                #     w_12 = -w_22*inv_Theta_11 @ theta_12
-                #     W_11 = inv_Theta_11 + np.outer(w_12, w_12)/w_22
-                #     W[_11] = W_11
-                #     W[_12] = w_12
-                #     W[_21] = w_12
-                #     W[_22] = w_22
+                    W[col, col] = 1/(Theta[col, col] - Theta[indices != col, col]
+                                     @ inv_Theta_11 @ Theta[indices != col, col])
+                    W[indices != col, col] = -W[col, col] * \
+                        inv_Theta_11 @ Theta[indices != col, col]
+                    W[col, indices != col] = -W[col, col] * \
+                        inv_Theta_11 @ Theta[indices != col, col]
+
+                    # Maybe W_11 can be done faster ?
+                    W_11_update = inv_Theta_11 + \
+                        np.outer(W[indices != col, col],
+                                 W[indices != col, col])/W[col, col]
+                    if col > 0:
+                        di = col - 1
+                        W[di][indices != col] = W_11_update[di]
+                        W[:, di][indices != col] = W_11_update[:, di]
+                    else:
+                        W[1:, 1:] = W_11_update[:]
 
             if self.outer_anderson:
                 if buffer_filler <= K:
-                    anderson_mem[:, :, buffer_filler] = W
+                    if self.algo == "dual":
+                        anderson_mem[:, :, buffer_filler] = W
+                    elif self.algo == "primal":
+                        anderson_mem[:, :, buffer_filler] = Theta
                     buffer_filler += 1
                 else:
                     try:
                         U = np.diff(anderson_mem)
                         c = np.linalg.solve(np.dot(U.T, U), np.ones(K))
                         C = c / np.sum(c)
-                        W = np.dot(np.ascontiguousarray(
-                            anderson_mem[:, :, 1:]), C)
+                        if self.algo == "dual":
+                            W = np.dot(np.ascontiguousarray(
+                                anderson_mem[:, :, 1:]), C)
+                        elif self.algo == "primal":
+                            Theta = np.dot(np.ascontiguousarray(
+                                anderson_mem[:, :, 1:]), C)
                         buffer_filler = 0
                     except np.linalg.LinAlgError:
                         print(f"linalg err at iter {it}")

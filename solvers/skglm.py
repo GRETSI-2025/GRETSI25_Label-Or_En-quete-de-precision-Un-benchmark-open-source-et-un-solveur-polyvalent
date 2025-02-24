@@ -25,7 +25,8 @@ class Solver(BaseSolver):
         'outer_anderson': [
             True,
             False,
-        ]}
+        ],
+    }
 
     requirements = ["numpy"]
 
