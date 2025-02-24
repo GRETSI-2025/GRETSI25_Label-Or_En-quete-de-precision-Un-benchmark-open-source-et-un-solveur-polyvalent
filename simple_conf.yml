@@ -3,15 +3,16 @@ objective:
   # - "GLasso[reg=[0.05,0.1,0.5,0.8]]"
   - "GLasso[reg=[0.1]]"
 solver:
-  # - skglm[algo=banerjee,lasso_solver=["anderson_cd_numba","cd_numba","cd_fast"],outer_anderson=False]
-  - gista
-  - skglm[algo=banerjee,lasso_solver=["anderson_cd_numba"],outer_anderson=False]
-  - sklearn
-  - gglasso
-  - skggm # skggm behaves weirdly, quite unstable
+  # - skglm[algo=dual,lasso_solver=["anderson_cd_numba","cd_numba","cd_fast"],outer_anderson=False]
+  # - gista
+  - skglm[algo=dual,outer_anderson=False]
+  # - sklearn
+  # - gglasso
+  # - skggm # skggm behaves weirdly, quite unstable
 dataset:
   # - simulated[n_samples=1000,n_features=[50,100,250,500,1000]]
   # - simulated[n_samples=10_000,n_features=[1000]]
+  # - simulated[n_samples=1000,n_features=[100]]
   - simulated[n_samples=1000,n_features=[100]]
 n-repetitions: 1 # 3 doesn't seem enough to account for variability
 # n-jobs: 1

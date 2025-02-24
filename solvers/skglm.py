@@ -15,13 +15,12 @@ class Solver(BaseSolver):
 
     parameters = {
         'algo': [
-            "banerjee",
-            # "mazumder",
+            "dual",
+            "primal",
         ],
-        'lasso_solver': [
-            "cd_fast",
-            "cd_numba",
-            "anderson_cd_numba",
+        'inner_anderson': [
+            True,
+            False,
         ],
         'outer_anderson': [
             True,
@@ -38,7 +37,7 @@ class Solver(BaseSolver):
         self.tol = 1e-18
         self.model = GraphicalLasso(alpha=self.alpha,
                                     algo=self.algo,
-                                    lasso_solver=self.lasso_solver,
+                                    inner_anderson=self.inner_anderson,
                                     warm_start=False,
                                     outer_anderson=self.outer_anderson,
                                     tol=self.tol,

@@ -20,8 +20,8 @@ class GraphicalLasso():
     def __init__(self,
                  alpha=1.,
                  weights=None,
-                 algo="banerjee",
-                 lasso_solver="anderson_cd",
+                 algo="dual",
+                 inner_anderson=False,
                  outer_anderson=False,
                  max_iter=100,
                  tol=1e-8,
@@ -31,7 +31,7 @@ class GraphicalLasso():
         self.alpha = alpha
         self.weights = weights
         self.algo = algo
-        self.lasso_solver = lasso_solver
+        self.inner_anderson = inner_anderson
         self.outer_anderson = outer_anderson
         self.max_iter = max_iter
         self.tol = tol
@@ -50,9 +50,9 @@ class GraphicalLasso():
                 raise ValueError("Weights should be symmetric.")
 
         if self.warm_start and hasattr(self, "precision_"):
-            if self.algo == "banerjee":
+            if self.algo == "dual":
                 raise ValueError(
-                    "Banerjee does not support warm start for now.")
+                    "dual does not support warm start for now.")
             Theta = self.precision_
             W = self.covariance_
 
@@ -63,18 +63,6 @@ class GraphicalLasso():
             W.flat[:: p + 1] = diagonal
             # Theta = np.linalg.pinv(W, hermitian=True)
             Theta = scipy.linalg.pinvh(W)
-
-        # datafit = compiled_clone(QuadraticHessian())
-
-        # penalty = compiled_clone(
-        #     WeightedL1(alpha=self.alpha, weights=Weights[0, :-1]))
-
-        # solver = AndersonCD(
-        #     warm_start=True,
-        #     fit_intercept=False,
-        #     ws_strategy="subdiff",
-        #     tol=self.inner_tol,
-        # )
 
         W_11 = np.copy(W[1:, 1:], order="C")
         eps = np.finfo(np.float64).eps
@@ -96,72 +84,38 @@ class GraphicalLasso():
 
                 s_12 = S[col, indices != col]
 
-                # if self.lasso_solver == "anderson_cd":
-                #     # penalty.weights = Weights[_12]
-                #     if self.algo == "banerjee":
-                #         eps = np.finfo(np.float64).eps
-                #         w_init = (Theta[indices != col, col] /
-                #                   (Theta[col, col] + 1000 * eps))
-                #         Xw_init = W_11 @ w_init
-                #         Q = W_11
-                #     elif self.algo == "mazumder":
-                #         inv_Theta_11 = W_11 - np.outer(w_12, w_12)/w_22
-                #         Q = inv_Theta_11
-                #         w_init = Theta[_12] * w_22
-                #         Xw_init = inv_Theta_11 @ w_init
-                #     else:
-                #         raise ValueError(f"Unsupported algo {self.algo}")
+                # penalty.weights = Weights[_12]
+                if self.algo == "dual":
+                    # w_init = (Theta[indices != col, col] /
+                    #           (Theta[col, col] + 1000 * eps))
+                    # Xw_init = W_11 @ w_init
+                    Q = W_11
 
-                #     beta, _, _ = solver._solve(
-                #         Q,
-                #         s_12,
-                #         datafit,
-                #         penalty,
-                #         w_init=w_init,
-                #         Xw_init=Xw_init,
-                #     )
+                elif self.algo == "primal":
+                    inv_Theta_11 = (W_11 -
+                                    np.outer(W[indices != col, col],
+                                             W[indices != col, col])/W[col, col])
+                    Q = inv_Theta_11
+                    # w_init = Theta[_12] * w_22
+                    # Xw_init = inv_Theta_11 @ w_init
+                else:
+                    raise ValueError(f"Unsupported algo {self.algo}")
+
                 beta = (Theta[indices != col, col]
                         / (Theta[col, col] + 1000*eps))
-                if self.lasso_solver == "cd_fast":
-                    beta = -beta
-                    beta, _, _, _ = cd_fast.enet_coordinate_descent_gram(
-                        beta,
-                        self.alpha,
-                        0,
-                        W_11,
-                        s_12,
-                        s_12,
-                        self.max_iter,
-                        self.inner_tol,
-                        check_random_state(None),
-                        False,
-                    )
-                    beta = -beta
 
-                elif self.lasso_solver == "cd_numba":
-                    beta = cd_gram(
-                        W_11,
-                        s_12,
-                        x=beta,
-                        alpha=self.alpha,
-                        anderson=False,
-                        tol=self.inner_tol,
-                        max_iter=self.max_iter,
-                    )
+                beta = cd_gram(
+                    W_11,
+                    s_12,
+                    x=beta,
+                    alpha=self.alpha,
+                    anderson=self.inner_anderson,
+                    anderson_buffer=4,
+                    tol=self.inner_tol,
+                    max_iter=self.max_iter,
+                )
 
-                elif self.lasso_solver == "anderson_cd_numba":
-                    beta = cd_gram(
-                        W_11,
-                        s_12,
-                        x=beta,
-                        alpha=self.alpha,
-                        anderson=True,
-                        anderson_buffer=4,
-                        tol=self.inner_tol,
-                        max_iter=self.max_iter,
-                    )
-
-                if self.algo == "banerjee":
+                if self.algo == "dual":
                     # Theta[col, col] = 1 / \
                     #     (W[col, col] + np.dot(beta, w_12))
 
@@ -175,7 +129,7 @@ class GraphicalLasso():
                     Theta[indices != col, col] = beta*Theta[col, col]
                     Theta[col, indices != col] = beta*Theta[col, col]
 
-                # else:  # mazumder
+                # else:  # primal
                 #     theta_12 = beta / s_22
                 #     theta_22 = 1/s_22 + theta_12 @ inv_Theta_11 @ theta_12
 
