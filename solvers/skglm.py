@@ -22,10 +22,10 @@ class Solver(BaseSolver):
             True,
             False,
         ],
-        'outer_anderson': [
-            True,
-            False,
-        ],
+        # 'outer_anderson': [
+        #     True,
+        #     False,
+        # ],
     }
 
     requirements = ["numpy"]
@@ -40,7 +40,7 @@ class Solver(BaseSolver):
                                     algo=self.algo,
                                     inner_anderson=self.inner_anderson,
                                     warm_start=False,
-                                    outer_anderson=self.outer_anderson,
+                                    # outer_anderson=self.outer_anderson,
                                     tol=self.tol,
                                     inner_tol=1e-4,
                                     )

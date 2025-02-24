@@ -114,7 +114,7 @@ def compute_gamma_init(Theta_next, Theta, W_next, W):
     """ Compute Barzilai-Borwein step """
     trace_num = ((Theta_next - Theta)**2).sum()
     trace_denom = ((Theta_next - Theta) * (W - W_next)).sum()
-    return trace_num/(trace_denom + 1e-9)
+    return trace_num/(trace_denom + 1e-12)
 
 
 @njit
@@ -123,7 +123,7 @@ def quad_approx(Theta_next, Theta, W, S, gamma):
 
     Q = (neg_llh(Theta, S) +
          ((Theta_next - Theta) * (S - W)).sum() +
-         np.linalg.norm(Theta_next - Theta)**2 / (2*gamma + 1e-9))
+         np.linalg.norm(Theta_next - Theta)**2 / (2*gamma + 1e-12))
 
     return Q
 
