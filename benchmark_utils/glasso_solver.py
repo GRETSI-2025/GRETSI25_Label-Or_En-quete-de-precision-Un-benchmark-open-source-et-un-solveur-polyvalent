@@ -60,6 +60,7 @@ class GraphicalLasso():
             Theta = scipy.linalg.pinvh(W)
 
         W_11 = np.copy(W[1:, 1:], order="C")
+        Theta_11 = np.copy(Theta[1:, 1:], order="C")
         eps = np.finfo(np.float64).eps
         for it in range(self.max_iter):
             # Theta_old = Theta.copy()
@@ -70,12 +71,23 @@ class GraphicalLasso():
                     (Theta.shape[0], Theta.shape[0], K+1))  # p x (p-1) x (K+1)
 
             for col in range(p):
+                indices_minus_col = np.concatenate(
+                    [indices[:col], indices[col + 1:]])
+                _11 = indices_minus_col[:, None], indices_minus_col[None]
+                _12 = indices_minus_col, col
+                _21 = col, indices_minus_col
+                _22 = col, col
+
                 if col > 0:
                     di = col - 1
                     W_11[di] = W[di][indices != col]
                     W_11[:, di] = W[:, di][indices != col]
+
+                    Theta_11[di] = Theta[di][indices != col]
+                    Theta_11[:, di] = Theta[:, di][indices != col]
                 else:
                     W_11[:] = W[1:, 1:]
+                    Theta_11[:] = Theta[1:, 1:]
 
                 s_12 = S[col, indices != col]
 
@@ -90,8 +102,14 @@ class GraphicalLasso():
                     inv_Theta_11 = (W_11 -
                                     np.outer(W[indices != col, col],
                                              W[indices != col, col])/W[col, col])
+                    inv_Theta_11_custom = (W[_11] -
+                                           np.outer(W[_12],
+                                                    W[_12])/W[_22])
+                    if norm(Theta_11@inv_Theta_11 - np.eye(S.shape[0]-1)) > 1:
+                        breakpoint()
+
                     Q = inv_Theta_11
-                    beta_init = Theta[indices != col, col] * W[col, col]
+                    beta_init = Theta[indices != col, col] * S[col, col]
                     # Xw_init = inv_Theta_11 @ w_init
                 else:
                     raise ValueError(f"Unsupported algo {self.algo}")
@@ -122,36 +140,42 @@ class GraphicalLasso():
                     Theta[col, indices != col] = beta*Theta[col, col]
 
                 else:  # primal
+                    Theta_prev = Theta.copy()
                     Theta[indices != col, col] = beta / S[col, col]
                     Theta[col, indices != col] = beta / S[col, col]
 
                     Theta[col, col] = (1/S[col, col] +
-                                       Theta[indices != col, col] @
+                                       Theta[col, indices != col] @
                                        inv_Theta_11 @
                                        Theta[indices != col, col])
 
-                    W[col, col] = (1/(Theta[col, col] -
-                                      Theta[indices != col, col] @
-                                      inv_Theta_11 @
-                                      Theta[indices != col, col]))
+                    # W = np.linalg.pinv(Theta, hermitian=True)
+                    W = np.linalg.inv(Theta)
+                    if Theta[col, col] < 0.:
+                        breakpoint()
 
-                    W[indices != col, col] = (-W[col, col] *
-                                              inv_Theta_11 @
-                                              Theta[indices != col, col])
-                    W[col, indices != col] = (-W[col, col] *
-                                              inv_Theta_11 @
-                                              Theta[indices != col, col])
+                    # W[col, col] = (1/(Theta[col, col] -
+                    #                   Theta[indices != col, col] @
+                    #                   inv_Theta_11 @
+                    #                   Theta[indices != col, col]))
 
-                    # Maybe W_11 can be done smarter ?
-                    W_11_update = (inv_Theta_11 +
-                                   np.outer(W[indices != col, col],
-                                            W[indices != col, col])/W[col, col])
-                    if col > 0:
-                        di = col - 1
-                        W[di][indices != col] = W_11_update[di]
-                        W[:, di][indices != col] = W_11_update[:, di]
-                    else:
-                        W[1:, 1:] = W_11_update[:]
+                    # W[indices != col, col] = (-W[col, col] *
+                    #                           inv_Theta_11 @
+                    #                           Theta[indices != col, col])
+                    # W[col, indices != col] = (-W[col, col] *
+                    #                           inv_Theta_11 @
+                    #                           Theta[indices != col, col])
+
+                    # # Maybe W_11 can be done smarter ?
+                    # W_11_update = (inv_Theta_11 +
+                    #                np.outer(W[indices != col, col],
+                    #                         W[indices != col, col])/W[col, col])
+                    # if col > 0:
+                    #     di = col - 1
+                    #     W[di][indices != col] = W_11_update[di]
+                    #     W[:, di][indices != col] = W_11_update[:, di]
+                    # else:
+                    #     W[1:, 1:] = W_11_update[:]
 
             if self.outer_anderson:
                 if buffer_filler <= K:
