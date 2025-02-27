@@ -99,14 +99,14 @@ class GraphicalLasso():
                     Q = W_11
 
                 elif self.algo == "primal":
-                    inv_Theta_11 = (W_11 -
-                                    np.outer(W[indices != col, col],
-                                             W[indices != col, col])/W[col, col])
-                    inv_Theta_11_custom = (W[_11] -
-                                           np.outer(W[_12],
-                                                    W[_12])/W[_22])
-                    if norm(Theta_11@inv_Theta_11 - np.eye(S.shape[0]-1)) > 1:
-                        breakpoint()
+                    # inv_Theta_11 = (W_11 -
+                    #                 np.outer(W[indices != col, col],
+                    #                          W[indices != col, col])/W[col, col])
+                    inv_Theta_11 = (W[_11] -
+                                    np.outer(W[_12],
+                                             W[_12])/W[_22])
+                    # if norm(Theta_11@inv_Theta_11 - np.eye(S.shape[0]-1)) > 1:
+                    #     breakpoint()
 
                     Q = inv_Theta_11
                     beta_init = Theta[indices != col, col] * S[col, col]
