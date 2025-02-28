@@ -56,14 +56,12 @@ class GraphicalLasso():
             W *= 0.95
             diagonal = S.flat[:: p + 1]
             W.flat[:: p + 1] = diagonal
-            # Theta = np.linalg.pinv(W, hermitian=True)
             Theta = scipy.linalg.pinvh(W)
 
         W_11 = np.copy(W[1:, 1:], order="C")
-        # Theta_11 = np.copy(Theta[1:, 1:], order="C")
         eps = np.finfo(np.float64).eps
         for it in range(self.max_iter):
-            # Theta_old = Theta.copy()
+            Theta_old = Theta.copy()
             if self.outer_anderson:
                 K = 4
                 buffer_filler = 0
@@ -84,15 +82,8 @@ class GraphicalLasso():
                         di = col - 1
                         W_11[di] = W[di][indices != col]
                         W_11[:, di] = W[:, di][indices != col]
-
-                        # Theta_11[di] = Theta[di][indices != col]
-                        # Theta_11[:, di] = Theta[:, di][indices != col]
-                        # print(norm(W_11 - W[_11]))
-                        # print(norm(Theta_11 - Theta[_11]))
-                        # breakpoint()
                     else:
                         W_11[:] = W[1:, 1:]
-                        # Theta_11[:] = Theta[1:, 1:]
 
                 s_12 = S[col, indices != col]
 
@@ -104,15 +95,11 @@ class GraphicalLasso():
                     Q = W_11
 
                 elif self.algo == "primal":
-                    # inv_Theta_11 = (W_11 -
-                    #                 np.outer(W[indices != col, col],
-                    #                          W[indices != col, col])/W[col, col])
                     inv_Theta_11 = (W[_11] -
                                     np.outer(W[_12],
                                              W[_12])/W[_22])
                     Q = inv_Theta_11
                     beta_init = Theta[indices != col, col] * S[col, col]
-                    # Xw_init = inv_Theta_11 @ w_init
                 else:
                     raise ValueError(f"Unsupported algo {self.algo}")
 
@@ -121,6 +108,7 @@ class GraphicalLasso():
                     s_12,
                     x=beta_init,
                     alpha=self.alpha,
+                    weights=Weights[indices != col, col],
                     anderson=self.inner_anderson,
                     anderson_buffer=4,
                     tol=self.inner_tol,
@@ -128,10 +116,6 @@ class GraphicalLasso():
                 )
 
                 if self.algo == "dual":
-                    # Theta[col, col] = 1 / \
-                    #     (W[col, col] + np.dot(beta, w_12))
-
-                    # w_12 = -W_11 @ beta
                     w_12 = -np.dot(W_11, beta)
                     W[col, indices != col] = w_12
                     W[indices != col, col] = w_12
@@ -189,16 +173,16 @@ class GraphicalLasso():
                         print(f"linalg err at iter {it}")
                         pass
 
-            # if norm(Theta - Theta_old) < self.tol:
-            #     print(f"Weighted Glasso converged at CD epoch {it + 1}")
-            #     break
-        # else:
-        #     print(
-                # f"Not converged at epoch {it + 1}, "
-                # f"diff={norm(Theta - Theta_old):.2e}"
-        #     )
+            if norm(Theta - Theta_old) < self.tol:
+                print(f"Weighted Glasso converged at CD epoch {it + 1}")
+                break
+        else:
+            print(
+                f"Not converged at epoch {it + 1}, "
+                f"diff={norm(Theta - Theta_old):.2e}"
+            )
         self.precision_, self.covariance_ = Theta, W
-        # self.n_iter_ = it + 1
+        self.n_iter_ = it + 1
 
         return self
 
@@ -209,7 +193,7 @@ def ST(x, tau):
 
 
 @njit
-def cd_gram(H, q, x, alpha, anderson=False, anderson_buffer=0, max_iter=100, tol=1e-4):
+def cd_gram(H, q, x, alpha, weights, anderson=False, anderson_buffer=0, max_iter=100, tol=1e-4):
     """
     Solve min .5 * x.T H x + q.T @ x + alpha * norm(x, 1) with(out) extrapolation.
 
@@ -232,7 +216,9 @@ def cd_gram(H, q, x, alpha, anderson=False, anderson_buffer=0, max_iter=100, tol
 
         for j in range(dim):
             x_j_prev = x[j]
-            x[j] = ST(x[j] - (Hx[j] + q[j]) / lc[j], alpha/lc[j])
+            x[j] = ST(x[j] - (Hx[j] + q[j]) / lc[j],
+                      alpha*weights[j] / lc[j])
+
             max_delta = max(max_delta, np.abs(x_j_prev - x[j]))
 
             if x_j_prev != x[j]:
