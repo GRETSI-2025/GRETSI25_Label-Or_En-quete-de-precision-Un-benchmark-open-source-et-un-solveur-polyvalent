@@ -3,6 +3,7 @@ from benchopt import BaseSolver, safe_import_context
 with safe_import_context() as import_ctx:
     import numpy as np
 
+    # You need to clone and install https://github.com/skggm/skggm
     from inverse_covariance import QuicGraphicalLasso
 
 
@@ -27,7 +28,7 @@ class Solver(BaseSolver):
         # sklearn doesnt' accept tolerance 0
         self.tol = 1e-18
         lam = self.alpha*np.ones_like(self.S)
-        lam[:: S.shape[0]+1] = np.zeros_like(diagonal)
+        np.fill_diagonal(lam, 0)
         self.model = QuicGraphicalLasso(lam=lam,
                                         mode="default",
                                         auto_scale=False,
