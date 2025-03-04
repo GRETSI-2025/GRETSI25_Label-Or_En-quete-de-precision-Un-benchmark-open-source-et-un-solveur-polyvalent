@@ -27,9 +27,7 @@ class Solver(BaseSolver):
 
         # sklearn doesnt' accept tolerance 0
         self.tol = 1e-18
-        lam = self.alpha*np.ones_like(self.S)
-        np.fill_diagonal(lam, 0)
-        self.model = QuicGraphicalLasso(lam=lam,
+        self.model = QuicGraphicalLasso(lam=self.alpha,
                                         mode="default",
                                         auto_scale=False,
                                         init_method="cov",
