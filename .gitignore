@@ -17,3 +17,5 @@ benchopt.ini
 coverage.xml
 /benchmark_utils/skggm/
 *.pdf
+
+/functional_connectivity/

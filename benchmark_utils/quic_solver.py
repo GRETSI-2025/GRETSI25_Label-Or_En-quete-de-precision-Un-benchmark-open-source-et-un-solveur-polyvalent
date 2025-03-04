@@ -26,3 +26,5 @@ class QUIC():
 
             # 1
             W = np.linalg.pinv(Theta)
+
+            # 2 Form the second order approximation

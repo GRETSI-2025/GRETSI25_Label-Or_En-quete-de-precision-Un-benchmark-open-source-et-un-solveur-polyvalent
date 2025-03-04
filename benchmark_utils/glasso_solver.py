@@ -60,6 +60,8 @@ class GraphicalLasso():
 
         W_11 = np.copy(W[1:, 1:], order="C")
         eps = np.finfo(np.float64).eps
+        it = 0
+        Theta_old = Theta.copy()
         for it in range(self.max_iter):
             Theta_old = Theta.copy()
             if self.outer_anderson:
@@ -67,7 +69,6 @@ class GraphicalLasso():
                 buffer_filler = 0
                 anderson_mem = np.zeros(
                     (Theta.shape[0], Theta.shape[0], K+1))  # p x (p-1) x (K+1)
-            # W_input = W.copy()
             for col in range(p):
                 if self.algo == "primal":
                     indices_minus_col = np.concatenate(

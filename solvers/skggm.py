@@ -32,8 +32,8 @@ class Solver(BaseSolver):
                                         mode="default",
                                         auto_scale=False,
                                         init_method="cov",
-                                        # Theta0=Theta_init,
-                                        # Sigma0=W,
+                                        Theta0=Theta_init,
+                                        Sigma0=W,
                                         tol=self.tol,
                                         )
         # Same as for skglm

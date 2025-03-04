@@ -5,14 +5,14 @@ from sklearn.metrics import f1_score
 from sklearn.datasets import make_sparse_spd_matrix
 from sklearn.utils import check_random_state
 
-# from sklearn.covariance import GraphicalLasso as skGraphicalLasso
-
-from benchmark_utils.glasso_solver import GraphicalLasso
-from benchmark_utils.adaptive_glasso_solver import AdaptiveGraphicalLasso
+# from benchopt.utils import safe_import_context
+# with safe_import_context() as import_ctx:
+from benchmark_utils import GraphicalLasso
+from benchmark_utils import AdaptiveGraphicalLasso
 
 # Data
-p = 50
-n = 200
+p = 100
+n = 1000
 rng = check_random_state(0)
 Theta_true = make_sparse_spd_matrix(
     p,
@@ -26,12 +26,13 @@ X = rng.multivariate_normal(
     cov=Sigma_true,
     size=n,
 )
+
 S = np.cov(X, bias=True, rowvar=False)
 S_cpy = np.copy(S)
 np.fill_diagonal(S_cpy, 0.)
 alpha_max = np.max(np.abs(S_cpy))
 
-alphas = alpha_max*np.geomspace(1, 1e-2, num=30)
+alphas = alpha_max*np.geomspace(1, 1e-4, num=30)
 
 
 penalties = [
@@ -58,8 +59,6 @@ models = [
                            strategy="mcp",
                            n_reweights=20,
                            tol=models_tol),
-
-
 ]
 
 my_glasso_nmses = {penalty: [] for penalty in penalties}
@@ -90,7 +89,7 @@ for i, (penalty, model) in enumerate(zip(penalties, models)):
 
 plt.close('all')
 fig, ax = plt.subplots(2, 1, sharex=True, figsize=(
-    [12.6,  4.63]), layout="constrained")
+    [4.84, 5.49]), layout="constrained")
 cmap = plt.get_cmap("tab10")
 for i, penalty in enumerate(penalties):
 
@@ -142,6 +141,6 @@ ax[1].set_xlabel(f"$\lambda / \lambda_\mathrm{{max}}$",  fontsize=18)
 ax[0].legend(fontsize=14)
 ax[0].grid(which='both', alpha=0.9)
 ax[1].grid(which='both', alpha=0.9)
-plt.savefig(f"./non_convex_p{p}_n{n}.pdf")
+# plt.savefig(f"./non_convex_p{p}_n{n}.pdf")
 # plt.show(block=False)
 plt.show()
