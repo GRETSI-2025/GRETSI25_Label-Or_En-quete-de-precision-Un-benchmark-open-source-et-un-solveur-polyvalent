@@ -129,7 +129,6 @@ class GraphicalLasso():
                 else:  # primal
                     Theta[indices != col, col] = beta / S[col, col]
                     Theta[col, indices != col] = beta / S[col, col]
-
                     Theta[col, col] = (1/S[col, col] +
                                        Theta[col, indices != col] @
                                        inv_Theta_11 @
@@ -138,14 +137,12 @@ class GraphicalLasso():
                                       Theta[indices != col, col] @
                                       inv_Theta_11 @
                                       Theta[indices != col, col]))
-
                     W[indices != col, col] = (-W[col, col] *
                                               inv_Theta_11 @
                                               Theta[indices != col, col])
                     W[col, indices != col] = (-W[col, col] *
                                               inv_Theta_11 @
                                               Theta[indices != col, col])
-
                     # Maybe W_11 can be done smarter ?
                     W[_11] = (inv_Theta_11 +
                               np.outer(W[indices != col, col],

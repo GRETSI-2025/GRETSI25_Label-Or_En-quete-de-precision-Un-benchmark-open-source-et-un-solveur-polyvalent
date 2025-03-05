@@ -22,10 +22,10 @@ class Solver(BaseSolver):
             True,
             False,
         ],
-        # 'outer_anderson': [
-        #     True,
-        #     False,
-        # ],
+        'outer_anderson': [
+            True,
+            False,
+        ],
     }
 
     requirements = ["numpy"]
