@@ -8,3 +8,4 @@ from .glasso_solver import GraphicalLasso
 from .adaptive_glasso_solver import AdaptiveGraphicalLasso
 from .skggm.inverse_covariance import QuicGraphicalLasso
 from .gista_solver import GraphicalIsta
+from .py_bigquic.py_bigquic import bigquic

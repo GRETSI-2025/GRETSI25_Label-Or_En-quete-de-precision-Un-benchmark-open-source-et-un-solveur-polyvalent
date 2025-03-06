@@ -32,7 +32,8 @@ S_cpy = np.copy(S)
 np.fill_diagonal(S_cpy, 0.)
 alpha_max = np.max(np.abs(S_cpy))
 
-alphas = alpha_max*np.geomspace(1, 1e-4, num=30)
+# alphas = alpha_max*np.geomspace(1, 1e-4, num=30)
+alphas = alpha_max*np.geomspace(1, 1e-4, num=10)
 
 
 penalties = [
@@ -41,7 +42,8 @@ penalties = [
     "R-L1 (L0.5)",
     "R-L1 (MCP)",
 ]
-
+# n_reweights = 20
+n_reweights = 5
 models_tol = 1e-4
 models = [
     GraphicalLasso(algo="primal",
@@ -49,15 +51,15 @@ models = [
                    tol=models_tol),
     AdaptiveGraphicalLasso(warm_start=True,
                            strategy="log",
-                           n_reweights=20,
+                           n_reweights=n_reweights,
                            tol=models_tol),
     AdaptiveGraphicalLasso(warm_start=True,
                            strategy="sqrt",
-                           n_reweights=20,
+                           n_reweights=n_reweights,
                            tol=models_tol),
     AdaptiveGraphicalLasso(warm_start=True,
                            strategy="mcp",
-                           n_reweights=20,
+                           n_reweights=n_reweights,
                            tol=models_tol),
 ]
 
@@ -89,7 +91,7 @@ for i, (penalty, model) in enumerate(zip(penalties, models)):
 
 plt.close('all')
 fig, ax = plt.subplots(2, 1, sharex=True, figsize=(
-    [4.84, 5.49]), layout="constrained")
+    [6.11, 3.91]), layout="constrained")
 cmap = plt.get_cmap("tab10")
 for i, penalty in enumerate(penalties):
 
@@ -141,6 +143,6 @@ ax[1].set_xlabel(f"$\lambda / \lambda_\mathrm{{max}}$",  fontsize=18)
 ax[0].legend(fontsize=14)
 ax[0].grid(which='both', alpha=0.9)
 ax[1].grid(which='both', alpha=0.9)
-# plt.savefig(f"./non_convex_p{p}_n{n}.pdf")
+plt.savefig(f"./non_convex_p{p}_n{n}.pdf")
 # plt.show(block=False)
 plt.show()

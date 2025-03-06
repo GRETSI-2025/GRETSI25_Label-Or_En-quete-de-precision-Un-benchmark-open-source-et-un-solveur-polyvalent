@@ -4,18 +4,19 @@ objective:
   # - "GLasso[reg=[0.5,0.1]]"
   - "GLasso[reg=[0.1]]"
 solver:
-  - gista
-  - skglm[algo=dual]
+  # - gista
+  - skglm[algo=dual, outer_anderson=False]
   - sklearn
-  - gglasso
-  - skggm
+  - pybigquic
+  # - gglasso
+  # - skggm
 dataset:
   # - simulated[n_samples=1000,n_features=[50,100,250,500,1000]]
   # - simulated[n_samples=10_000,n_features=[1000]]
   # - simulated[n_samples=1000,n_features=[100]]
   # - simulated[n_samples=1000,n_features=[200]]
-  - simulated[n_samples=1000,n_features=[50,100,200,500]]
-  # - simulated[n_samples=1000,n_features=[50]]
+  # - simulated[n_samples=1000,n_features=[50,100,200,500]]
+  - simulated[n_samples=1000,n_features=[200]]
 n-repetitions: 10 # 3 doesn't seem enough to account for variability
 # n-jobs: 1
 

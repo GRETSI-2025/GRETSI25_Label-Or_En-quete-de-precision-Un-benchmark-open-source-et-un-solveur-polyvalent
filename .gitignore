@@ -19,3 +19,4 @@ coverage.xml
 *.pdf
 
 /functional_connectivity/
+/benchmark_utils/py_bigquic/

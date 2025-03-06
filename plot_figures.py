@@ -81,7 +81,8 @@ def custom_plot(df, obj_col,
               linestyle='--')
     ax.set_xlim(df['time'].min(), df['time'].max())
     ax.grid(which='both', alpha=0.9)
-    ax.set_xlabel("Time [sec]", fontsize=FONTSIZE)
+    # ax.set_xlabel("Time [sec]", fontsize=FONTSIZE)
+    ax.set_ylabel("F(x) - F(x*)", fontsize=FONTSIZE)
 
     return
 
@@ -108,7 +109,9 @@ def plot_bench(fname,
     datasets = df['data_name'].unique()
 
     plt.close('all')
-    fig, ax = plt.subplots(1, 3, figsize=([7.65, 2.99]))
+    fig, ax = plt.subplots(3, 1, figsize=(
+        [2.99, 7.65]), constrained_layout=True)
+    plt.tight_layout()
     for j, data in enumerate(datasets[1:4]):
         df_data = df[df['data_name'] == data]
         objective_names = df['objective_name'].unique()
@@ -122,25 +125,26 @@ def plot_bench(fname,
                     continue
                 # fig = custom_plot(df_obj, obj_col=obj_col, ax=ax[j])
                 custom_plot(df_obj, obj_col=obj_col, ax=ax[j])
-                if j == 0:
-                    ax[j].set_ylabel("F(x) - F(x*)", fontsize=FONTSIZE)
+                # if j == 0:
+                #     ax[j].set_ylabel("F(x) - F(x*)", fontsize=FONTSIZE)
                 if j == 0:
                     ax[j].set_xlim([0, 0.3])
-                    ax[j].set_title("p=100", fontsize=FONTSIZE)
+                    ax[j].set_title("p=100", fontsize=FONTSIZE-2)
                 elif j == 1:
                     ax[j].set_xlim([0, 0.75])
-                    ax[j].set_title("p=200", fontsize=FONTSIZE)
+                    ax[j].set_title("p=200", fontsize=FONTSIZE-2)
                 elif j == 2:
                     ax[j].set_xlim([0, 2])
-                    ax[j].set_title("p=500", fontsize=FONTSIZE)
+                    ax[j].set_title("p=500", fontsize=FONTSIZE-2)
+                    ax[j].set_xlabel("Time [sec]", fontsize=FONTSIZE)
                 # figs.append(fig)
-                plt.legend(
-                    loc='lower center',
-                    bbox_to_anchor=(-1.1, -0.5),
-                    fancybox=True,
-                    shadow=True,
-                    ncol=6)
-                plt.tight_layout()
+                # plt.legend(
+                #     loc='lower center',
+                #     bbox_to_anchor=(-1.1, -0.65),
+                #     fancybox=True,
+                #     shadow=True,
+                #     ncol=3)
+                ax[1].legend(loc='center left', bbox_to_anchor=(1, 0.5))
 
     fig.savefig('./test.pdf', bbox_inches='tight')
     return fig
