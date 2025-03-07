@@ -28,12 +28,6 @@ class Solver(BaseSolver):
 
     def run(self, n_iter):
 
-        # self.model.solve(solver_params={
-        #     # 'tol': self.tol,
-        #     # 'max_iter': n_iter
-        # })
-        # self.Theta = self.model.solution.adjacency_
-
         # gglasso is not robust to max_iter=0
         if n_iter > 0:
             sol = ADMM_SGL(S=self.S,

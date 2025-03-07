@@ -49,19 +49,13 @@ class Solver(BaseSolver):
         self.rdata = numpy2ri.py2rpy(data)
         self.bigquic = R['bigquic']
 
-        self.sk_prec = GraphicalLasso(
-            alpha=self.alpha, covariance="precomputed", max_iter=1000, tol=1e-8).fit(self.S).precision_
-        self.sk_diag = self.sk_prec.diagonal()
-
     def run(self, n_iter):
 
         self.rn_iter = numpy2ri.py2rpy(n_iter)
-        self.Theta = np.array(self.bigquic(self.rdata, self.ralpha, self.rn_iter, self.rtol))[
-            :self.S.shape[0], :self.S.shape[0]]
+        self.Theta = np.array(self.bigquic(
+            self.rdata, self.ralpha, self.rn_iter, self.rtol))[:self.S.shape[0], :self.S.shape[0]]
 
         self.Theta = 1. / self.stds * self.Theta / self.stds[:, np.newaxis]
-
-        # np.fill_diagonal(self.Theta, self.sk_diag)
 
     def get_result(self):
         return dict(Theta=self.Theta)
