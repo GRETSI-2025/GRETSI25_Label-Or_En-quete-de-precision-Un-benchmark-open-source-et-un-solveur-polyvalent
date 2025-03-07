@@ -5,9 +5,9 @@ objective:
   - "GLasso[reg=[0.1]]"
 solver:
   # - gista
-  - skglm[algo=dual, outer_anderson=False]
+  # - skglm[algo=dual, outer_anderson=False]
   - sklearn
-  - pybigquic
+  # - pybigquic
   # - gglasso
   # - skggm
 dataset:
@@ -16,7 +16,7 @@ dataset:
   # - simulated[n_samples=1000,n_features=[100]]
   # - simulated[n_samples=1000,n_features=[200]]
   # - simulated[n_samples=1000,n_features=[50,100,200,500]]
-  - simulated[n_samples=1000,n_features=[200]]
+  - simulated[n_samples=1000,n_features=[50]]
 n-repetitions: 10 # 3 doesn't seem enough to account for variability
 # n-jobs: 1
 
