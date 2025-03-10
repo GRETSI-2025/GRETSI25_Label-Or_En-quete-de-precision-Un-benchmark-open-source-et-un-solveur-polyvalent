@@ -32,7 +32,8 @@ class Solver(BaseSolver):
         if n_iter > 0:
             sol = ADMM_SGL(S=self.S,
                            lambda1=self.alpha,
-                           Omega_0=self.Theta_init,
+                           #    Omega_0=self.Theta_init,
+                           Omega_0=np.eye(self.S.shape[0]),
                            max_iter=n_iter,
                            tol=self.tol
                            )

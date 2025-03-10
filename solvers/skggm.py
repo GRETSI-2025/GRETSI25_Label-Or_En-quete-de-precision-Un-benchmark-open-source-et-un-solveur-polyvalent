@@ -19,11 +19,11 @@ class Solver(BaseSolver):
         self.alpha = alpha
         self.X = X
 
-        W = S.copy()
-        W *= 0.95
-        diagonal = S.flat[:: S.shape[0] + 1]
-        W.flat[:: S.shape[0] + 1] = diagonal
-        Theta_init = np.linalg.pinv(W, hermitian=True)
+        # W = S.copy()
+        # W *= 0.95
+        # diagonal = S.flat[:: S.shape[0] + 1]
+        # W.flat[:: S.shape[0] + 1] = diagonal
+        # Theta_init = np.linalg.pinv(W, hermitian=True)
 
         # sklearn doesnt' accept tolerance 0
         self.tol = 1e-18
@@ -31,8 +31,8 @@ class Solver(BaseSolver):
                                         mode="default",
                                         auto_scale=False,
                                         init_method="cov",
-                                        Theta0=Theta_init,
-                                        Sigma0=W,
+                                        # Theta0=Theta_init,
+                                        # Sigma0=W,
                                         tol=self.tol,
                                         )
         # Same as for skglm

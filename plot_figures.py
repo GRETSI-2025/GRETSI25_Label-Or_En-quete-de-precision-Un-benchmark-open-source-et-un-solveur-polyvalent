@@ -17,7 +17,7 @@ COLORS = [CMAP(i) for i in range(CMAP.N)]
 COLORS = COLORS[::2] + COLORS[1::2]
 MARKERS = {i: v for i, v in enumerate(plt.Line2D.markers)}
 solvers_idx = {}
-FONTSIZE = 18
+FONTSIZE = 14
 
 
 def get_solver_style(solver, plotly=True):
@@ -39,7 +39,7 @@ def custom_plot(df, obj_col,
                 ax):
     df = df.copy()
     solver_names = df['solver_name'].unique()
-    title = df['data_name'].unique()[0][10:39]
+    title = df['data_name'].unique()[0]  # [10:39]
     df.query(f"`{obj_col}` not in [inf, -inf]", inplace=True)
 
     eps = 1e-10
@@ -47,19 +47,35 @@ def custom_plot(df, obj_col,
     c_star = df[obj_col].min() - eps
     df.loc[:, obj_col] -= c_star
 
-    # fig = plt.figure()
-
-    # if df[obj_col].count() == 0:  # missing values
-    #     ax.text(0.5, 0.5, "Not Available")
-    #     return fig
-
     for i, solver_name in enumerate(solver_names):
-        if solver_name == 'skglm[algo=dual,inner_anderson=True]':
-            solver_name_label = 'skglm[dual, Anderson]'
-        elif solver_name == 'skglm[algo=dual,inner_anderson=False]':
-            solver_name_label = 'skglm[dual]'
+        # breakpoint()
+        if solver_name == 'skglm[algo=dual,inner_anderson=True,outer_anderson=False]':
+            solver_name_label = 'Sk-GLM[dual, Anderson] ($Ours$)'
+            color = "tab:orange"
+
+        elif solver_name == 'skglm[algo=dual,inner_anderson=False,outer_anderson=False]':
+            solver_name_label = 'Sk-GLM[dual] ($Ours$)'
+            color = "tab:green"
+
+        elif solver_name == 'gista':
+            solver_name_label = f'G-ISTA ($Ours$)'
+            color = "tab:blue"
+
+        elif solver_name == 'sklearn':
+            solver_name_label = "Scikit-learn ($GLasso$)"
+            color = "tab:red"
+
+        elif solver_name == 'gglasso':
+            solver_name_label = "GGLasso ($ADMM$)"
+            color = "tab:purple"
+
+        elif solver_name == 'skggm':
+            solver_name_label = "SkGGM ($QUIC$)"
+            color = "tab:brown"
+
         else:
-            solver_name_label = solver_name
+            breakpoint()
+
         df_ = df[df['solver_name'] == solver_name]
         curve = df_.groupby('stop_val').median(numeric_only=True)
 
@@ -81,9 +97,6 @@ def custom_plot(df, obj_col,
               linestyle='--')
     ax.set_xlim(df['time'].min(), df['time'].max())
     ax.grid(which='both', alpha=0.9)
-    # ax.set_xlabel("Time [sec]", fontsize=FONTSIZE)
-    ax.set_ylabel("F(x) - F(x*)", fontsize=FONTSIZE)
-
     return
 
 
@@ -109,13 +122,15 @@ def plot_bench(fname,
     datasets = df['data_name'].unique()
 
     plt.close('all')
-    fig, ax = plt.subplots(3, 1, figsize=(
-        [2.99, 7.65]), constrained_layout=True)
+    fig, ax = plt.subplots(3, 2, figsize=(
+        [4.96, 6.82]), constrained_layout=True)
     plt.tight_layout()
-    for j, data in enumerate(datasets[1:4]):
+
+    for j, data in enumerate(datasets[:3]):  # [1:4]):
         df_data = df[df['data_name'] == data]
         objective_names = df['objective_name'].unique()
-        for objective_name in objective_names:
+
+        for k, objective_name in enumerate(objective_names):
             df_obj = df_data[df_data['objective_name'] == objective_name]
             for kind, obj_col in itertools.product(
                     config["plots"], obj_cols
@@ -123,35 +138,47 @@ def plot_bench(fname,
                 if obj_col != "objective_value" and (
                         kind == "bar_chart" or "subopt" in kind):
                     continue
-                # fig = custom_plot(df_obj, obj_col=obj_col, ax=ax[j])
-                custom_plot(df_obj, obj_col=obj_col, ax=ax[j])
-                # if j == 0:
-                #     ax[j].set_ylabel("F(x) - F(x*)", fontsize=FONTSIZE)
+                custom_plot(df_obj, obj_col=obj_col, ax=ax[j, k])
+
+                ax[j, 0].set_ylabel("F(x) - F(x*)", fontsize=FONTSIZE)
+
+                if j == 2:
+                    ax[j, k].set_xlabel("Time [sec]", fontsize=FONTSIZE)
+
+                ax[0, 1].legend(loc='center left', bbox_to_anchor=(1, 0.5))
+
                 if j == 0:
-                    ax[j].set_xlim([0, 0.3])
-                    ax[j].set_title("p=100", fontsize=FONTSIZE-2)
+                    ax[j, k].set_xlim([0, 0.05])
+                    ax[j, 0].set_title(
+                        f"$\lambda = 0.1\lambda_\mathrm{{max}}$\np=50", fontsize=FONTSIZE)
+                    ax[j, 1].set_title(
+                        f"$\lambda = 0.01\lambda_\mathrm{{max}}$\np=50", fontsize=FONTSIZE)
                 elif j == 1:
-                    ax[j].set_xlim([0, 0.75])
-                    ax[j].set_title("p=200", fontsize=FONTSIZE-2)
+                    ax[j, k].set_xlim([0, 0.5])
+                    ax[j, k].set_title(
+                        f"p=100", fontsize=FONTSIZE)
                 elif j == 2:
-                    ax[j].set_xlim([0, 2])
-                    ax[j].set_title("p=500", fontsize=FONTSIZE-2)
-                    ax[j].set_xlabel("Time [sec]", fontsize=FONTSIZE)
-                # figs.append(fig)
+                    ax[j, 0].set_xlim([0, 0.75])
+                    ax[j, 1].set_xlim([0, 2.5])
+                    ax[j, k].set_title(
+                        f"p=200", fontsize=FONTSIZE)
+
                 # plt.legend(
                 #     loc='lower center',
                 #     bbox_to_anchor=(-1.1, -0.65),
                 #     fancybox=True,
                 #     shadow=True,
                 #     ncol=3)
-                ax[1].legend(loc='center left', bbox_to_anchor=(1, 0.5))
+                # ax[1].legend(loc='center left', bbox_to_anchor=(1, 0.5))
 
-    fig.savefig('./test.pdf', bbox_inches='tight')
+    fig.savefig('./test_better.pdf', bbox_inches='tight')
     return fig
 
 
 fname = Path(
-    "./outputs/benchopt_run_2025-03-05_11h11m39.parquet")
+    # "./outputs/benchopt_run_2025-03-05_11h11m39.parquet")
+    # "./outputs/benchopt_run_2025-03-07_15h28m13.parquet")
+    "./outputs/benchopt_run_2025-03-10_15h03m40.parquet")
 kinds = list(PLOT_KINDS.keys())
 fig = plot_bench(fname, Benchmark(
     "./"),
