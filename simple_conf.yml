@@ -2,7 +2,7 @@ objective:
   - "GLasso[reg=[0.1, 0.01]]"
 solver:
   - gista
-  - skglm[algo=dual, outer_anderson=False]
+  - skglm[algo=dual, inner_anderson=False, outer_anderson=False]
   - sklearn
   - gglasso
   - skggm
