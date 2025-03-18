@@ -50,19 +50,20 @@ def custom_plot(df, obj_col,
     for i, solver_name in enumerate(solver_names):
         # breakpoint()
         if solver_name == 'skglm[algo=dual,inner_anderson=True,outer_anderson=False]':
-            solver_name_label = 'Sk-GLM[dual, Anderson] ($Ours$)'
-            color = "tab:orange"
+            continue
+            # solver_name_label = 'Sk-GLM[dual, Anderson] ($Ours$)'
+            # color = "tab:orange"
 
         elif solver_name == 'skglm[algo=dual,inner_anderson=False,outer_anderson=False]':
-            solver_name_label = 'Sk-GLM[dual] ($Ours$)'
-            color = "tab:green"
-
-        elif solver_name == 'gista':
-            solver_name_label = f'G-ISTA ($Ours$)'
+            solver_name_label = 'skglm (ours)'
             color = "tab:blue"
 
+        elif solver_name == 'gista':
+            solver_name_label = f'G-ISTA'
+            color = "tab:green"
+
         elif solver_name == 'sklearn':
-            solver_name_label = "Scikit-learn ($GLasso$)"
+            solver_name_label = "scikit-learn ($GLasso$)"
             color = "tab:red"
 
         elif solver_name == 'gglasso':
@@ -70,9 +71,12 @@ def custom_plot(df, obj_col,
             color = "tab:purple"
 
         elif solver_name == 'skggm':
-            solver_name_label = "SkGGM ($QUIC$)"
+            solver_name_label = "skggm ($QUIC$)"
             color = "tab:brown"
 
+        elif solver_name == 'obn':
+            solver_name_label = 'OBN'
+            color = "tab:pink"
         else:
             breakpoint()
 
@@ -82,7 +86,7 @@ def custom_plot(df, obj_col,
         q1 = df_.groupby('stop_val')['time'].quantile(.1).to_numpy()
         q9 = df_.groupby('stop_val')['time'].quantile(.9).to_numpy()
 
-        color, marker = get_solver_style(solver_name, plotly=False)
+        # color, marker = get_solver_style(solver_name, plotly=False)
         ax.semilogy(curve['time'],
                     curve[obj_col],
                     color=color,
@@ -140,12 +144,14 @@ def plot_bench(fname,
                     continue
                 custom_plot(df_obj, obj_col=obj_col, ax=ax[j, k])
 
-                ax[j, 0].set_ylabel("F(x) - F(x*)", fontsize=FONTSIZE)
+                ax[j, 0].set_ylabel(
+                    f"F($\Theta$) - F($\Theta^*$)", fontsize=FONTSIZE)
 
                 if j == 2:
                     ax[j, k].set_xlabel("Time [sec]", fontsize=FONTSIZE)
 
-                ax[0, 1].legend(loc='center left', bbox_to_anchor=(1, 0.5))
+                ax[0, 1].legend(loc='center left',
+                                bbox_to_anchor=(1, 0.5), ncol=3)
 
                 if j == 0:
                     ax[j, k].set_xlim([0, 0.05])
@@ -171,14 +177,15 @@ def plot_bench(fname,
                 #     ncol=3)
                 # ax[1].legend(loc='center left', bbox_to_anchor=(1, 0.5))
 
-    fig.savefig('./test_better.pdf', bbox_inches='tight')
+    fig.savefig('./test_even_better_no_anderson.pdf', bbox_inches='tight')
     return fig
 
 
 fname = Path(
     # "./outputs/benchopt_run_2025-03-05_11h11m39.parquet")
     # "./outputs/benchopt_run_2025-03-07_15h28m13.parquet")
-    "./outputs/benchopt_run_2025-03-10_15h03m40.parquet")
+    # "./outputs/benchopt_run_2025-03-10_15h03m40.parquet")
+    "./outputs/benchopt_run_2025-03-11_10h41m58.parquet")
 kinds = list(PLOT_KINDS.keys())
 fig = plot_bench(fname, Benchmark(
     "./"),

@@ -1,27 +1,14 @@
 objective:
-  # - "GLasso[reg=[0.01,0.1,0.5]]"
-  # - "GLasso[reg=[0.05,0.1,0.5,0.8]]"
-  # - "GLasso[reg=[0.5,0.1]]"
   - "GLasso[reg=[0.1, 0.01]]"
 solver:
   - gista
   - skglm[algo=dual, outer_anderson=False]
   - sklearn
-  # - pybigquic
   - gglasso
   - skggm
+  - obn
 dataset:
-  # - simulated[n_samples=1000,n_features=[50,100,250,500,1000]]
-  # - simulated[n_samples=10_000,n_features=[1000]]
-  # - simulated[n_samples=1000,n_features=[100]]
-  # - simulated[n_samples=1000,n_features=[200]]
-  - simulated[n_samples=1000,n_features=[50,100,200,500]]
-  # - simulated[n_samples=200,n_features=[50,100,200,500,700]]
-  # - simulated[n_samples=1000,n_features=[50,500]]
-n-repetitions: 10 # 3 doesn't seem enough to account for variability
-# n-jobs: 1
+  - simulated[n_samples=1000,n_features=[50,100,200]]
+n-repetitions: 10
 
-
-# benchopt clean ; OMP_NUM_THREADS=1 benchopt run --no-timeout . --config ./simple_conf.yml
-# benchopt clean ; benchopt run --no-timeout . --config ./simple_conf.yml
-# benchopt run --no-timeout . --config ./simple_conf.yml
+# benchopt run . --config ./simple_conf.yml
