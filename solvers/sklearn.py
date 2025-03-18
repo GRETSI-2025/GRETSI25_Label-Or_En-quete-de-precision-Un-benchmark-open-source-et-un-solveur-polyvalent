@@ -26,8 +26,6 @@ class Solver(BaseSolver):
                                     enet_tol=1e-4,
                                     )
         warnings.filterwarnings('ignore', category=ConvergenceWarning)
-        # Same as for skglm
-        # self.run(5)
 
     def run(self, n_iter):
 

@@ -19,11 +19,11 @@ class Solver(BaseSolver):
             "primal",
         ],
         'inner_anderson': [
-            True,
+            # True,
             False,
         ],
         'outer_anderson': [
-            True,
+            # True,
             False,
         ],
     }
@@ -40,7 +40,6 @@ class Solver(BaseSolver):
                                     algo=self.algo,
                                     inner_anderson=self.inner_anderson,
                                     warm_start=False,
-                                    # outer_anderson=self.outer_anderson,
                                     tol=self.tol,
                                     inner_tol=1e-4,
                                     )
