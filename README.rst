@@ -1,5 +1,5 @@
 
-My Benchopt Benchmark
+A Graphical Lasso Benchmark
 =====================
 |Build Status| |Python 3.6+|
 
