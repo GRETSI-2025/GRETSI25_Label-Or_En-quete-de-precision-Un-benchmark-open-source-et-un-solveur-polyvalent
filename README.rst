@@ -26,7 +26,7 @@ This benchmark can be run using the following commands:
 
 Please visit https://benchopt.github.io/api.html for more details on using the `benchopt` ecosystem.
 
-.. image:: bench_fig.pdf
+.. image:: bench_fig.jpg
    :width: 350
    :align: center
 
