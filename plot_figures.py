@@ -39,7 +39,7 @@ def custom_plot(df, obj_col,
                 ax):
     df = df.copy()
     solver_names = df['solver_name'].unique()
-    title = df['data_name'].unique()[0]  # [10:39]
+    title = df['data_name'].unique()[0]
     df.query(f"`{obj_col}` not in [inf, -inf]", inplace=True)
 
     eps = 1e-10
@@ -51,8 +51,6 @@ def custom_plot(df, obj_col,
         # breakpoint()
         if solver_name == 'skglm[algo=dual,inner_anderson=True,outer_anderson=False]':
             continue
-            # solver_name_label = 'Sk-GLM[dual, Anderson] ($Ours$)'
-            # color = "tab:orange"
 
         elif solver_name == 'skglm[algo=dual,inner_anderson=False,outer_anderson=False]':
             solver_name_label = 'skglm (ours)'
@@ -86,11 +84,9 @@ def custom_plot(df, obj_col,
         q1 = df_.groupby('stop_val')['time'].quantile(.1).to_numpy()
         q9 = df_.groupby('stop_val')['time'].quantile(.9).to_numpy()
 
-        # color, marker = get_solver_style(solver_name, plotly=False)
         ax.semilogy(curve['time'],
                     curve[obj_col],
                     color=color,
-                    # marker=marker,
                     label=solver_name_label,
                     linewidth=3)
         ax.fill_betweenx(
@@ -130,7 +126,7 @@ def plot_bench(fname,
         [4.96, 6.82]), constrained_layout=True)
     plt.tight_layout()
 
-    for j, data in enumerate(datasets[:3]):  # [1:4]):
+    for j, data in enumerate(datasets[:3]):
         df_data = df[df['data_name'] == data]
         objective_names = df['objective_name'].unique()
 
@@ -169,23 +165,12 @@ def plot_bench(fname,
                     ax[j, k].set_title(
                         f"p=200", fontsize=FONTSIZE)
 
-                # plt.legend(
-                #     loc='lower center',
-                #     bbox_to_anchor=(-1.1, -0.65),
-                #     fancybox=True,
-                #     shadow=True,
-                #     ncol=3)
-                # ax[1].legend(loc='center left', bbox_to_anchor=(1, 0.5))
-
     fig.savefig('./test_even_better_no_anderson.pdf', bbox_inches='tight')
     return fig
 
 
 fname = Path(
-    # "./outputs/benchopt_run_2025-03-05_11h11m39.parquet")
-    # "./outputs/benchopt_run_2025-03-07_15h28m13.parquet")
-    # "./outputs/benchopt_run_2025-03-10_15h03m40.parquet")
-    "./outputs/benchopt_run_2025-03-11_10h41m58.parquet")
+    "./outputs/benchopt_run_2025-03-11_10h41m58.parquet")  # Use your own .parquet here
 kinds = list(PLOT_KINDS.keys())
 fig = plot_bench(fname, Benchmark(
     "./"),
