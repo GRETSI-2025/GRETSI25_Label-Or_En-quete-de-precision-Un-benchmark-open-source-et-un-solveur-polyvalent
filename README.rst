@@ -10,7 +10,7 @@ This benchmark is dedicated to solvers of the Graphical Lasso estimator (Banerje
 
 $$\\min_{\\Theta \\succ 0} - \\log \\det (\\Theta) + \\langle \\Theta, S \\rangle + \\alpha \\Vert \\Theta \\Vert_{1,\\mathrm{off}},$$
 
-where $\\Theta$ is the optimization variable and $S$ is the empirical covariance matrix.
+where $\\Theta$ is the optimization variable, $S$ is the empirical covariance matrix and $\alpha$ is the regularization hyperparameter.
 
 Install
 --------
@@ -21,16 +21,10 @@ This benchmark can be run using the following commands:
 
    $ pip install -U benchopt
    $ git clone https://github.com/Perceptronium/benchmark_graphical_lasso
-   $ benchopt run benchmark_graphical_lasso
-
-Apart from the problem, options can be passed to ``benchopt run``, to restrict the benchmarks to some solvers or datasets, e.g.:
-
-.. code-block::
-
-	$ benchopt run benchmark_graphical_lasso -s solver1 -d dataset2 --max-runs 10 --n-repetitions 10
+   $ benchopt run . --config ./simple_conf.yml
 
 
-Use ``benchopt run -h`` for more details about these options, or visit https://benchopt.github.io/api.html.
+Please visit https://benchopt.github.io/api.html for more details on using the `benchopt` ecosystem.
 
 .. |Build Status| image:: https://github.com/Perceptronium/benchmark_graphical_lasso/actoiworkflows/main.yml/badge.svg
    :target: https://github.com/Perceptronium/benchmark_graphical_lasso/actions
