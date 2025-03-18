@@ -10,7 +10,7 @@ This benchmark is dedicated to solvers of the Graphical Lasso estimator (Banerje
 
 $$\\min_{\\Theta \\succ 0} - \\log \\det (\\Theta) + \\langle \\Theta, S \\rangle + \\alpha \\Vert \\Theta \\Vert_{1,\\mathrm{off}},$$
 
-where $\\Theta$ is the optimization variable, $S$ is the empirical covariance matrix and $\alpha$ is the regularization hyperparameter.
+where $\\Theta$ is the optimization variable, $S$ is the empirical covariance matrix and $\\alpha$ is the regularization hyperparameter.
 
 Install
 --------
