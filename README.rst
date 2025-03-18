@@ -26,6 +26,10 @@ This benchmark can be run using the following commands:
 
 Please visit https://benchopt.github.io/api.html for more details on using the `benchopt` ecosystem.
 
+.. image:: bench_fig.pdf
+   :width: 350
+   :align: center
+
 .. |Build Status| image:: https://github.com/Perceptronium/benchmark_graphical_lasso/actoiworkflows/main.yml/badge.svg
    :target: https://github.com/Perceptronium/benchmark_graphical_lasso/actions
 .. |Python 3.6+| image:: https://img.shields.io/badge/python-3.6%2B-blue
