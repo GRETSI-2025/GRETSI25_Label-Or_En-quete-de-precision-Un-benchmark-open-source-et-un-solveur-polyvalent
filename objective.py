@@ -16,7 +16,7 @@ class Objective(BaseObjective):
         'reg': [0.1],
     }
 
-    requirements = ["numpy", "scikit-learn"]
+    requirements = ["numpy", "scikit-learn", "numba"]
 
     min_benchopt_version = "1.5"
 
