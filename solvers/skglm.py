@@ -28,7 +28,7 @@ class Solver(BaseSolver):
         ],
     }
 
-    requirements = ["numpy"]
+    requirements = ["numpy", "numba"]
 
     def set_objective(self, S, alpha, X):
         self.S = S
