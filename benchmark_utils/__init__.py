@@ -6,6 +6,6 @@
 
 from .glasso_solver import GraphicalLasso
 from .adaptive_glasso_solver import AdaptiveGraphicalLasso
-# from .skggm.inverse_covariance import QuicGraphicalLasso # Please install skggm to run this solver
+from .skggm.inverse_covariance import QuicGraphicalLasso
 from .gista_solver import GraphicalIsta
 from .OBN.algos.OBN import OBN
