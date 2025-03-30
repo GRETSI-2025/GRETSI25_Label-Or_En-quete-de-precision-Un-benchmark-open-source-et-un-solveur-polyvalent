@@ -22,6 +22,8 @@ This benchmark can be run using the following commands:
    $ pip install -U benchopt
    $ git clone https://github.com/Perceptronium/benchmark_graphical_lasso
    $ pip install gglasso
+   $ git clone https://github.com/skggm/skggm ./benchmark_graphical_lasso/benchmark_utils/skggm
+   $ pip install -e ./benchmark_graphical_lasso/benchmark_utils/skggm/
    $ benchopt run ./benchmark_graphical_lasso --config ./benchmark_graphical_lasso/simple_conf.yml
 
 
