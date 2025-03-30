@@ -4,9 +4,9 @@ solver:
   - gista
   - skglm[algo=dual, inner_anderson=False, outer_anderson=False]
   - sklearn
-  - gglasso # Please install GGlasso to run this solver
+  - gglasso
   # - skggm # Please install Skggm to run this solver
-  # - obn
+  - obn
 dataset:
   - simulated[n_samples=1000,n_features=[50,100,200]]
 n-repetitions: 10

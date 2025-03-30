@@ -3,7 +3,7 @@ from benchopt import BaseSolver, safe_import_context
 
 with safe_import_context() as import_ctx:
     import numpy as np
-    from benchmark_utils.GLASSO_Framework.algos.GLASSO.OBN import OBN
+    from benchmark_utils.OBN.algos.OBN import OBN
 
     from sklearn.covariance import GraphicalLasso
 
