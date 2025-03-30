@@ -4,7 +4,7 @@ solver:
   - gista
   - skglm[algo=dual, inner_anderson=False, outer_anderson=False]
   - sklearn
-  # - gglasso # Please install GGlasso to run this solver
+  - gglasso # Please install GGlasso to run this solver
   # - skggm # Please install Skggm to run this solver
   # - obn
 dataset:

@@ -32,7 +32,7 @@ class Solver(BaseSolver):
                            )
             self.Theta = sol[0]['Theta']
         else:
-            self.Theta = self.Theta_init
+            self.Theta = np.eye(self.S.shape[0])  # self.Theta_init
 
     def get_result(self):
         return dict(Theta=self.Theta)
