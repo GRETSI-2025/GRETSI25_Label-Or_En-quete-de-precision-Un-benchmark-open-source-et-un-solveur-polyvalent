@@ -1,8 +1,5 @@
 import numpy as np
 from numpy import linalg
-# from benchmark_utils.GLASSO_Framework.algos.GLASSO.base import base
-# from benchmark_utils.GLASSO_Framework.utils.common import np_soft_threshold
-# from benchmark_utils.GLASSO_Framework.utils.GLASSO.glasso import objective_F_cholesky
 from benchmark_utils.OBN.algos.base import base
 from benchmark_utils.OBN.utils.common import np_soft_threshold
 from benchmark_utils.OBN.utils.GLASSO.glasso import objective_F_cholesky
