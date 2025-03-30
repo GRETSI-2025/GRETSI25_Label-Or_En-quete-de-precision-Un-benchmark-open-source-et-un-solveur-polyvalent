@@ -1,6 +1,6 @@
 import numpy as np
-from benchmark_utils.GLASSO_Framework.utils.common import np_soft_threshold
-from benchmark_utils.GLASSO_Framework.utils.common import cp_soft_threshold
+from benchmark_utils.OBN.utils.common import np_soft_threshold
+from benchmark_utils.OBN.utils.common import cp_soft_threshold
 
 
 def objective_g(A_inv, S):
