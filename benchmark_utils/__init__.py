@@ -8,4 +8,4 @@ from .glasso_solver import GraphicalLasso
 from .adaptive_glasso_solver import AdaptiveGraphicalLasso
 # from .skggm.inverse_covariance import QuicGraphicalLasso # Please install skggm to run this solver
 from .gista_solver import GraphicalIsta
-from .GLASSO_Framework.algos.GLASSO.OBN import OBN
+# from .GLASSO_Framework.algos.GLASSO.OBN import OBN
