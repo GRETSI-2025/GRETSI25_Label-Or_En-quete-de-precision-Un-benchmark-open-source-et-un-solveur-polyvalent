@@ -27,7 +27,7 @@ This benchmark can be run using the following commands:
    $ benchopt run ./benchmark_graphical_lasso --config ./benchmark_graphical_lasso/simple_conf.yml
 
 
-Please visit https://benchopt.github.io/api.html for more details on using the `benchopt` ecosystem.
+Please visit https://benchopt.github.io/ for more details on using the `benchopt` ecosystem.
 
 .. image:: bench_fig.jpg
    :width: 350
