@@ -18,6 +18,7 @@ Install
 This benchmark can be run using the following commands, which first create a dedicated Conda environment:
 
 .. code-block::
+
    $ conda create -n glasso_bench_env python=3.10
    $ conda activate glasso_bench_env
    $ pip install -U benchopt
