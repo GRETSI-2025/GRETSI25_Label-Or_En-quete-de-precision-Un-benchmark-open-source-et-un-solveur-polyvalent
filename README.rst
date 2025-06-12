@@ -15,14 +15,16 @@ where $\\Theta$ is the optimization variable, $S$ is the empirical covariance ma
 Install
 --------
 
-This benchmark can be run using the following commands:
+This benchmark can be run using the following commands, which first create a dedicated Conda environment:
 
 .. code-block::
-
+   $ conda create -n glasso_bench_env python=3.10
+   $ conda activate glasso_bench_env
    $ pip install -U benchopt
    $ git clone https://github.com/Perceptronium/benchmark_graphical_lasso
    $ pip install gglasso
    $ git clone https://github.com/skggm/skggm ./benchmark_graphical_lasso/benchmark_utils/skggm
+   $ pip install Cython
    $ pip install -e ./benchmark_graphical_lasso/benchmark_utils/skggm/
    $ benchopt run ./benchmark_graphical_lasso --config ./benchmark_graphical_lasso/simple_conf.yml
 
