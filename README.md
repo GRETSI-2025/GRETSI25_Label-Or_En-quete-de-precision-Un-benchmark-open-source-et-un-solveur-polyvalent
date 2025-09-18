@@ -8,7 +8,7 @@ A Graphical Lasso Benchmark
 
 | Label décerné | Auteur | Rapporteur | Éléments reproduits | Liens |
 |:-------------:|:------:|:----------:|:-------------------:|:------|
-| ![](label_or.png) | Can POULIQUEN<br>[@Perceptronium](https://github.com/Perceptronium) | Éric DEBREUVE |  Figures 2 et 3 | 📌&nbsp;[Dépôt&nbsp;original](https://github.com/Perceptronium/benchmark_graphical_lasso)<br>⚙️&nbsp;[Issue](https://github.com/GRETSI-2025/Label-Reproductible/issues/18)<br>📝&nbsp;[Rapport](https://github.com/akrah/test/tree/main/rapports/Rapport_issue_18) |
+| ![](label_or.png) | Can POULIQUEN<br>[@Perceptronium](https://github.com/Perceptronium) | Éric DEBREUVE |  Figures 2 et 3 | 📌&nbsp;[Dépôt&nbsp;original](https://github.com/Perceptronium/benchmark_graphical_lasso)<br>⚙️&nbsp;[Issue](https://github.com/GRETSI-2025/Label-Reproductible/issues/18)<br>📝&nbsp;[Rapport](https://github.com/GRETSI-2025/Label-Reproductible/tree/main/rapports/Rapport_issue_18) |
 
 <hr>
 
